@@ -230,6 +230,22 @@ private func sanChecks() throws {
     checkEqual(SAN.notation(for: legalMove(checkOnly, "h1h7"), in: checkOnly), "Rh7+", "SAN Rh7+")
 }
 
+private func moveLookupChecks() throws {
+    // EP-Schlag über move(from:to:) muss Flags vollständig mitbringen.
+    var epPos = try Position(fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")
+    let d5 = SAN.move(from: "d7d5", in: epPos)
+    check(d5 != nil, "moveLookup: d7d5 legal")
+    epPos = epPos.make(d5!)
+    let ep = epPos.move(from: Square(file: 4, rank: 3), to: Square(file: 3, rank: 5))
+    check(ep != nil, "moveLookup: e4d6 EP gefunden")
+    check(ep?.flags.contains(.enPassant) == true, "moveLookup: EP-Flag")
+    check(ep?.flags.contains(.capture) == true, "moveLookup: Capture-Flag")
+    if let ep {
+        check(epPos.make(ep).board[Square(file: 3, rank: 4).index] == nil, "moveLookup: d5-Bauer entfernt")
+    }
+}
+
+
 // MARK: - Start
 
 func main() throws {
@@ -238,6 +254,7 @@ func main() throws {
     try moveGenerationChecks()
     try materialAndOutcomeChecks()
     try sanChecks()
+    try moveLookupChecks()
     print("Ergebnis: \(passedCount) bestanden, \(failedCount) gescheitert")
     exit(failedCount == 0 ? 0 : 1)
 }
