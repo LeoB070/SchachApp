@@ -1,97 +1,146 @@
 import Foundation
-import SwiftData
+import CoreData
 
-/// Einstellungs-Raster (ein Datensatz, key = "app").
-@Model
-final class AppSettings {
-    @Attribute(.unique) var key: String = "app"
-    var enginePath: String? = nil
-    var threads: Int = 4
-    var hashMB: Int = 256
-    var skillLevel: Int = 20
-    var limitStrength: Bool = false
-    var uciElo: Int = 2500
-    var analysisDepth: Int = 18
-    var boardTheme: String = "Grün"
-    var soundEnabled: Bool = true
-    var animationsEnabled: Bool = true
+@objc(AppSettings)
+public class AppSettings: NSManagedObject {
+    @NSManaged public var key: String
+    @NSManaged public var enginePath: String?
+    @NSManaged public var threads: Int64
+    @NSManaged public var hashMB: Int64
+    @NSManaged public var skillLevel: Int64
+    @NSManaged public var limitStrength: Bool
+    @NSManaged public var uciElo: Int64
+    @NSManaged public var analysisDepth: Int64
+    @NSManaged public var boardTheme: String
+    @NSManaged public var soundEnabled: Bool
+    @NSManaged public var animationsEnabled: Bool
 
-    init() {}
-
-    static func fetchOrCreate(context: ModelContext) -> AppSettings {
-        let descriptor = FetchDescriptor<AppSettings>(predicate: #Predicate { $0.key == "app" })
-        if let existing = try? context.fetch(descriptor).first {
+    public static func fetchOrCreate(context: NSManagedObjectContext) -> AppSettings {
+        let request: NSFetchRequest<AppSettings> = NSFetchRequest(entityName: "AppSettings")
+        request.predicate = NSPredicate(format: "key == %@", "app")
+        if let existing = try? context.fetch(request).first {
             return existing
         }
-        let settings = AppSettings()
-        context.insert(settings)
+        let settings = AppSettings(context: context)
+        settings.key = "app"
+        settings.threads = 4
+        settings.hashMB = 256
+        settings.skillLevel = 20
+        settings.limitStrength = false
+        settings.uciElo = 2500
+        settings.analysisDepth = 18
+        settings.boardTheme = "Grün"
+        settings.soundEnabled = true
+        settings.animationsEnabled = true
         try? context.save()
         return settings
     }
 }
 
-/// Gespeicherte Partie (Archiv).
-@Model
-final class SavedGame {
-    var id: UUID = UUID()
-    var createdAt: Date = Date()
-    var whitePlayer: String = "Weiß"
-    var blackPlayer: String = "Schwarz"
-    var result: String = "*"
-    var timeControl: String = "-"
-    var openingName: String? = nil
-    var pgn: String = ""
+@objc(SavedGame)
+public class SavedGame: NSManagedObject {
+    @NSManaged public var id: UUID
+    @NSManaged public var createdAt: Date
+    @NSManaged public var whitePlayer: String
+    @NSManaged public var blackPlayer: String
+    @NSManaged public var result: String
+    @NSManaged public var timeControl: String
+    @NSManaged public var openingName: String?
+    @NSManaged public var pgn: String
 
-    init() {}
+    public override func awakeFromInsert() {
+        super.awakeFromInsert()
+        id = UUID()
+        createdAt = Date()
+        whitePlayer = "Weiß"
+        blackPlayer = "Schwarz"
+        result = "*"
+        timeControl = "-"
+        pgn = ""
+    }
 }
 
-/// Gespeicherte Analyse einer Partie.
-@Model
-final class GameAnalysisEntry {
-    var id: UUID = UUID()
-    var gameID: UUID? = nil
-    var createdAt: Date = Date()
-    var accuracyWhite: Double = 0
-    var accuracyBlack: Double = 0
-    var openingECO: String? = nil
-    var openingName: String? = nil
-    var analysisJSON: Data = Data()
+@objc(GameAnalysisEntry)
+public class GameAnalysisEntry: NSManagedObject {
+    @NSManaged public var id: UUID
+    @NSManaged public var gameID: UUID?
+    @NSManaged public var createdAt: Date
+    @NSManaged public var accuracyWhite: Double
+    @NSManaged public var accuracyBlack: Double
+    @NSManaged public var openingECO: String?
+    @NSManaged public var openingName: String?
+    @NSManaged public var analysisJSON: Data
 
-    init() {}
+    public override func awakeFromInsert() {
+        super.awakeFromInsert()
+        id = UUID()
+        createdAt = Date()
+        analysisJSON = Data()
+    }
 }
 
-/// Puzzle-Fortschritt (ein Datensatz, key = "app").
-@Model
-final class PuzzleProgress {
-    @Attribute(.unique) var key: String = "app"
-    var rating: Int = 1500
-    var solvedCount: Int = 0
-    var failedCount: Int = 0
-    var currentStreak: Int = 0
-    var bestStreak: Int = 0
-    var lastSolvedAt: Date? = nil
+@objc(PuzzleProgress)
+public class PuzzleProgress: NSManagedObject {
+    @NSManaged public var key: String
+    @NSManaged public var rating: Int64
+    @NSManaged public var solvedCount: Int64
+    @NSManaged public var failedCount: Int64
+    @NSManaged public var currentStreak: Int64
+    @NSManaged public var bestStreak: Int64
+    @NSManaged public var lastSolvedAt: Date?
 
-    init() {}
+    public static func fetchOrCreate(context: NSManagedObjectContext) -> PuzzleProgress {
+        let request: NSFetchRequest<PuzzleProgress> = NSFetchRequest(entityName: "PuzzleProgress")
+        request.predicate = NSPredicate(format: "key == %@", "app")
+        if let existing = try? context.fetch(request).first {
+            return existing
+        }
+        let progress = PuzzleProgress(context: context)
+        progress.key = "app"
+        progress.rating = 1500
+        progress.solvedCount = 0
+        progress.failedCount = 0
+        progress.currentStreak = 0
+        progress.bestStreak = 0
+        try? context.save()
+        return progress
+    }
 }
 
-/// Einzelnes Puzzle-Ergebnis (Rating-Verlauf).
-@Model
-final class PuzzleResult {
-    var id: UUID = UUID()
-    var puzzleID: String = ""
-    var createdAt: Date = Date()
-    var solved: Bool = false
-    var ratingAfter: Int = 1500
+@objc(PuzzleResult)
+public class PuzzleResult: NSManagedObject {
+    @NSManaged public var id: UUID
+    @NSManaged public var puzzleID: String
+    @NSManaged public var createdAt: Date
+    @NSManaged public var solved: Bool
+    @NSManaged public var ratingAfter: Int64
 
-    init() {}
+    public override func awakeFromInsert() {
+        super.awakeFromInsert()
+        id = UUID()
+        puzzleID = ""
+        createdAt = Date()
+        ratingAfter = 1500
+    }
 }
 
-/// Lektions-Fortschritt (key = "Kurs|Lektion").
-@Model
-final class LessonProgress {
-    @Attribute(.unique) var key: String = "app"
-    var completed: Bool = false
-    var updatedAt: Date = Date()
+@objc(LessonProgress)
+public class LessonProgress: NSManagedObject {
+    @NSManaged public var key: String
+    @NSManaged public var completed: Bool
+    @NSManaged public var updatedAt: Date
 
-    init() {}
+    public static func find(key: String, context: NSManagedObjectContext) -> LessonProgress? {
+        let request: NSFetchRequest<LessonProgress> = NSFetchRequest(entityName: "LessonProgress")
+        request.predicate = NSPredicate(format: "key == %@", key)
+        return try? context.fetch(request).first
+    }
+
+    public static func setCompleted(key: String, completed: Bool, context: NSManagedObjectContext) {
+        let item = find(key: key, context: context) ?? LessonProgress(context: context)
+        item.key = key
+        item.completed = completed
+        item.updatedAt = Date()
+        try? context.save()
+    }
 }

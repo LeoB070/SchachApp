@@ -3,3 +3,6 @@
 *.xcodeproj
 DerivedData/
 *.ipa
+dist/
+.code-review-graph/
+.serena/

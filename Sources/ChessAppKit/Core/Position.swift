@@ -1,7 +1,7 @@
 import Foundation
 
 /// Rochaderechte; rawValue = FEN-Buchstabe.
-public enum CastlingRight: String, CaseIterable {
+public enum CastlingRight: String, CaseIterable, Sendable {
     case whiteKing = "K"
     case whiteQueen = "Q"
     case blackKing = "k"
@@ -9,7 +9,7 @@ public enum CastlingRight: String, CaseIterable {
 }
 
 /// Eine Schachstellung. Brett als 64 Einträge, index = rank*8+file (a1 = 0, h8 = 63).
-public struct Position: Equatable {
+public struct Position: Equatable, Sendable {
     public var board: [Piece?]
     public var turn: Color
     public var castling: Set<CastlingRight>

@@ -12,7 +12,7 @@ struct MoveListView: View {
             } else {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 2) {
-                        ForEach(stride(from: 0, to: sans.count, by: 2), id: \.self) { i in
+                        ForEach(Array(stride(from: 0, to: sans.count, by: 2)), id: \.self) { i in
                             HStack(spacing: 4) {
                                 Text("\(i / 2 + 1).")
                                 Text(sans[i])

@@ -112,8 +112,13 @@ enum ChessDataModel {
 public final class PersistenceController {
     public let container: NSPersistentContainer
 
-    public init() {
+    public init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "ChessApp", managedObjectModel: ChessDataModel.make())
+        if inMemory {
+            let store = NSPersistentStoreDescription()
+            store.type = NSInMemoryStoreType
+            container.persistentStoreDescriptions = [store]
+        }
         container.loadPersistentStores { _, error in
             // DB-Fehler bewusst hart abbrechen: Für das Gerüst ist ein Crash beim
             // Anlegen des Stores aussagekräftiger als still laufende Defaults.

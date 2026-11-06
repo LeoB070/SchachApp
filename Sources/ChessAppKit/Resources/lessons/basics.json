@@ -1,0 +1,33 @@
+{
+  "id": "basics",
+  "title": "Schach-Grundlagen",
+  "description": "Brett, Figuren und Sonderregeln.",
+  "icon": "graduationcap.fill",
+  "chapters": [
+    {
+      "title": "Die ersten Schritte",
+      "lessons": [
+        {
+          "id": "l1_board",
+          "title": "1. Brett und Figuren",
+          "text": "Das Brett hat 64 Felder. Linien heißen a bis h, Reihen 1 bis 8. Beim Aufstellen liegt rechts unten ein weißes Feld. Weiß beginnt."
+        },
+        {
+          "id": "l2_movement",
+          "title": "2. Die Gangart der Figuren",
+          "text": "Türme ziehen gerade, Läufer diagonal, die Dame beides. Der König zieht ein Feld. Springer ziehen zwei Felder in eine Richtung und eines zur Seite; sie dürfen Figuren überspringen. Bauern ziehen vorwärts und schlagen schräg."
+        },
+        {
+          "id": "l3_special",
+          "title": "3. En passant",
+          "text": "Nach einem Doppelschritt kann ein Bauer sofort im nächsten Zug en passant geschlagen werden, als wäre er nur ein Feld vorgerückt.",
+          "fen": "8/8/8/3pP3/8/8/8/k6K w - d6 0 1",
+          "exercise": {
+            "task": "Schlage den Bauern en passant auf d6.",
+            "solutionMove": "e5d6"
+          }
+        }
+      ]
+    }
+  ]
+}

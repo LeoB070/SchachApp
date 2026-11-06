@@ -1,26 +1,15 @@
 import SwiftUI
-import SwiftData
+import CoreData
 import ChessAppKit
 
 @main
 struct ChessAppMain: App {
-    let container: ModelContainer
-
-    init() {
-        do {
-            container = try ModelContainer(
-                for: AppSettings.self, SavedGame.self, GameAnalysisEntry.self,
-                PuzzleProgress.self, PuzzleResult.self, LessonProgress.self
-            )
-        } catch {
-            fatalError("SwiftData-Container konnte nicht erstellt werden: \(error)")
-        }
-    }
+    let persistence = PersistenceController()
 
     var body: some Scene {
         WindowGroup {
             RootView()
-                .modelContainer(container)
+                .environment(\.managedObjectContext, persistence.context)
         }
     }
 }

@@ -254,15 +254,19 @@ private func moveLookupChecks() throws {
 
 // MARK: - Start
 
-func main() throws {
+@MainActor func main() async throws {
     try perftChecks()
     try fenChecks()
     try moveGenerationChecks()
     try materialAndOutcomeChecks()
     try sanChecks()
     try moveLookupChecks()
+    try pgnChecks()
+    try learningDataChecks()
+    try await engineAnalysisChecks()
+    try await botChecks()
     print("Ergebnis: \(passedCount) bestanden, \(failedCount) gescheitert")
     exit(failedCount == 0 ? 0 : 1)
 }
 
-try main()
+try await main()

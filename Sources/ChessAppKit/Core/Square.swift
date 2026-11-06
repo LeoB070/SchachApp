@@ -2,7 +2,7 @@ import Foundation
 
 /// Ein Brett-Feld: index = rank*8+file, also a1 = 0 und h8 = 63.
 /// file/rank je 0–7, rank 0 = Reihe "1".
-public struct Square: Hashable {
+public struct Square: Hashable, Sendable {
     public let index: Int
 
     public init(index: Int) {

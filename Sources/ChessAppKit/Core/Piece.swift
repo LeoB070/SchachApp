@@ -1,7 +1,7 @@
 import Foundation
 
 /// Figurenart.
-public enum PieceType: String, CaseIterable {
+public enum PieceType: String, CaseIterable, Sendable {
     case pawn, knight, bishop, rook, queen, king
 
     /// FEN-Buchstabe für Weiß (Großbuchstabe); Schwarz nutzt denselben in Kleinbuchstaben.
@@ -47,7 +47,7 @@ public enum PieceType: String, CaseIterable {
 }
 
 /// Figur mit Farbe.
-public struct Piece: Equatable {
+public struct Piece: Equatable, Sendable {
     public let color: Color
     public let type: PieceType
 

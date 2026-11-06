@@ -53,8 +53,13 @@ extension Position {
         }
 
         // Felder 5/6: Halbzüge ohne Schlagen/Bauernzug; Zugnummer.
-        self.halfmoveClock = fields.count > 4 ? (Int(fields[4]) ?? 0) : 0
-        self.fullmoveNumber = fields.count > 5 ? (Int(fields[5]) ?? 1) : 1
+        guard let halfmoves = fields.count > 4 ? Int(fields[4]) : 0,
+              let fullmoves = fields.count > 5 ? Int(fields[5]) : 1,
+              (0...1_000_000).contains(halfmoves), (1...1_000_000).contains(fullmoves)
+        else { throw FenError.invalid }
+        // Begrenzt importierte Zähler vor der Weitergabe an Engine und Zugarithmetik.
+        self.halfmoveClock = halfmoves
+        self.fullmoveNumber = fullmoves
     }
 
     /// Stellung als FEN-Zeile.

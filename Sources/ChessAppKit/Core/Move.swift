@@ -1,9 +1,9 @@
 import Foundation
 
 /// Ein Zug von Feld zu Feld, optional mit Umwandlung und Flags.
-public struct Move: Equatable {
+public struct Move: Equatable, Sendable {
     /// Zusätzliche Zugart-Markierungen.
-    public struct Flags: OptionSet {
+    public struct Flags: OptionSet, Sendable {
         public let rawValue: Int
 
         public init(rawValue: Int) {

@@ -27,6 +27,10 @@ struct SquareView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(square.name), \(piece.map { "\($0.color == .white ? "Weiß" : "Schwarz") \($0.type.rawValue)" } ?? "leer")")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction(named: Text("Ziehen"), onTap)
     }
 }
 
@@ -43,16 +47,25 @@ struct MoveArrowView: View {
     let to: Square
     let size: CGFloat
     let color: SwiftUI.Color
+    let orientation: PieceColor
 
     var body: some View {
         Path { path in
             let cell = size / 8
-            let start = CGPoint(x: (CGFloat(from.file) + 0.5) * cell,
-                                y: (7 - CGFloat(from.rank) + 0.5) * cell)
-            let end = CGPoint(x: (CGFloat(to.file) + 0.5) * cell,
-                              y: (7 - CGFloat(to.rank) + 0.5) * cell)
+            let startSquare = orientation == .white ? from : Square(index: 63 - from.index)
+            let endSquare = orientation == .white ? to : Square(index: 63 - to.index)
+            let start = CGPoint(x: (CGFloat(startSquare.file) + 0.5) * cell,
+                                y: (7 - CGFloat(startSquare.rank) + 0.5) * cell)
+            let end = CGPoint(x: (CGFloat(endSquare.file) + 0.5) * cell,
+                              y: (7 - CGFloat(endSquare.rank) + 0.5) * cell)
             path.move(to: start)
             path.addLine(to: end)
+            let angle = atan2(end.y - start.y, end.x - start.x)
+            for offset in [-CGFloat.pi / 6, CGFloat.pi / 6] {
+                path.move(to: end)
+                path.addLine(to: CGPoint(x: end.x - cell * 0.35 * cos(angle + offset),
+                                         y: end.y - cell * 0.35 * sin(angle + offset)))
+            }
         }
         .stroke(color, lineWidth: 3)
         .allowsHitTesting(false)
@@ -62,24 +75,24 @@ struct MoveArrowView: View {
 /// 8×8-Brett mit Figuren, Selektion, legalen Zielen, letztem Zug und optionalen Pfeilen.
 struct BoardView: View {
     let position: Position
-    let orientation: Color
+    let orientation: PieceColor
     let legalTargets: Set<Square>
     let lastMove: Move?
     let arrows: [MoveArrow]
     let selected: Square?
     let onSquareTap: (Square) -> Void
 
+    @AppStorage("boardTheme") private var boardTheme = "Grün"
+    @AppStorage("animationsEnabled") private var animationsEnabled = true
+
     var body: some View {
-        let light = AppTheme.lightSquare("Grün")
-        let dark = AppTheme.darkSquare("Grün")
+        let light = AppTheme.lightSquare(boardTheme)
+        let dark = AppTheme.darkSquare(boardTheme)
 
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
             let cell = size / 8
             ZStack {
-                ForEach(arrows) { arrow in
-                    MoveArrowView(from: arrow.from, to: arrow.to, size: size, color: arrow.color)
-                }
                 ForEach(0..<64, id: \.self) { index in
                     let file = index % 8
                     let rank = index / 8
@@ -107,7 +120,12 @@ struct BoardView: View {
                     .position(x: (CGFloat(file) + 0.5) * cell,
                               y: (7 - CGFloat(rank) + 0.5) * cell)
                 }
+                ForEach(arrows) { arrow in
+                    MoveArrowView(from: arrow.from, to: arrow.to, size: size,
+                                  color: arrow.color, orientation: orientation)
+                }
             }
+            .animation(animationsEnabled ? .easeInOut(duration: 0.15) : nil, value: lastMove)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .aspectRatio(1, contentMode: .fit)

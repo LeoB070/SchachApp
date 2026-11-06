@@ -2,7 +2,8 @@ import SwiftUI
 
 /// Navigations-Root: Sidebar mit den Hauptbereichen, Detailansicht rechts.
 struct RootView: View {
-    @State private var selection: SidebarItem? = .play
+    @LocalState private var selection: SidebarItem? = .play
+    @StateObject private var playViewModel = PlayViewModel()
 
     var body: some View {
         NavigationSplitView {
@@ -14,12 +15,12 @@ struct RootView: View {
         } detail: {
             Group {
                 switch selection {
-                case .play: PlayView()
-                case .analysis: PlaceholderView(title: "Analyse", hint: "M5/M6 – Analyse gegen Stockfish")
-                case .puzzles: PlaceholderView(title: "Puzzles", hint: "M7 – Taktik-Puzzles")
-                case .lessons: PlaceholderView(title: "Lernen", hint: "M8 – Lektionen")
-                case .archive: PlaceholderView(title: "Archiv", hint: "M4 – Gespeicherte Partien")
-                case .stats: PlaceholderView(title: "Statistik", hint: "M9 – Statistik")
+                case .play: PlayView(viewModel: playViewModel)
+                case .analysis: ReviewView()
+                case .puzzles: PuzzleView()
+                case .lessons: LessonListView()
+                case .archive: GameArchiveView()
+                case .stats: StatsView()
                 case .settings: SettingsView()
                 case .none: EmptyView()
                 }
@@ -27,8 +28,10 @@ struct RootView: View {
         }
     }
 
-    enum SidebarItem: CaseIterable, Hashable {
+    enum SidebarItem: String, CaseIterable, Hashable, Identifiable {
         case play, analysis, puzzles, lessons, archive, stats, settings
+
+        var id: String { rawValue }
 
         var title: String {
             switch self {

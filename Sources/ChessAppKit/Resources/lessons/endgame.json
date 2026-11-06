@@ -1,0 +1,43 @@
+{
+  "id": "endgame",
+  "title": "Endspiel-Grundlagen",
+  "description": "Matt mit Dame und Turm sowie Bauernumwandlung.",
+  "icon": "flag.checkered",
+  "chapters": [
+    {
+      "title": "Eine Gewinnstellung verwerten",
+      "lessons": [
+        {
+          "id": "l1_queen_mate",
+          "title": "1. König und Dame",
+          "text": "Die Dame drängt den gegnerischen König an den Rand. Der eigene König hilft beim Matt. Vermeide Patt: Ohne legalen Zug und ohne Schach ist die Partie remis.",
+          "fen": "7k/8/5KQ1/8/8/8/8/8 w - - 0 1",
+          "exercise": {
+            "task": "Setze die Dame auf g7 und damit matt.",
+            "solutionMove": "g6g7"
+          }
+        },
+        {
+          "id": "l2_rook_mate",
+          "title": "2. König und Turm",
+          "text": "Der Turm schneidet den König ab. Der eigene König nimmt Fluchtfelder. Am Rand gelingt das Matt mit beiden Figuren gemeinsam.",
+          "fen": "k7/8/1K6/8/8/8/8/7R w - - 0 1",
+          "exercise": {
+            "task": "Setze den Turm auf h8 und damit matt.",
+            "solutionMove": "h1h8"
+          }
+        },
+        {
+          "id": "l3_pawn_promotion",
+          "title": "3. Bauernumwandlung",
+          "text": "Ein weißer Bauer wird auf der achten Reihe, ein schwarzer auf der ersten umgewandelt. Du wählst Dame, Turm, Läufer oder Springer.",
+          "fen": "8/P6k/8/8/8/8/8/7K w - - 0 1",
+          "exercise": {
+            "task": "Wandle auf a8 in eine Dame um.",
+            "solutionMove": "a7a8q"
+          }
+        }
+      ]
+    }
+  ]
+}

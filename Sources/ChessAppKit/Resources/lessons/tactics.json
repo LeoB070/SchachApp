@@ -1,0 +1,38 @@
+{
+  "id": "tactics",
+  "title": "Taktik-Grundlagen",
+  "description": "Gabel, Fesselung und Mattmuster.",
+  "icon": "bolt.fill",
+  "chapters": [
+    {
+      "title": "Taktische Motive",
+      "lessons": [
+        {
+          "id": "l1_fork",
+          "title": "1. Die Springergabel",
+          "text": "Eine Gabel greift zwei Ziele gleichzeitig an. Der Springer kann hier König und Turm gleichzeitig angreifen.",
+          "fen": "r3k3/8/8/3N4/8/8/8/7K w - - 0 1",
+          "exercise": {
+            "task": "Spiele die Springergabel auf c7.",
+            "solutionMove": "d5c7"
+          }
+        },
+        {
+          "id": "l2_pin",
+          "title": "2. Die Fesselung",
+          "text": "Eine Figur ist an den König gefesselt, wenn ihr Wegziehen den König ins Schach stellen würde. Ein solcher Zug ist verboten."
+        },
+        {
+          "id": "l3_backrank",
+          "title": "3. Das Grundreihenmatt",
+          "text": "Eigene Bauern können dem König die Flucht versperren. Ein Turm oder eine Dame kann dann auf der Grundreihe mattsetzen.",
+          "fen": "6k1/5ppp/8/8/8/8/8/4R1K1 w - - 0 1",
+          "exercise": {
+            "task": "Setze mit dem Turm auf e8 matt.",
+            "solutionMove": "e1e8"
+          }
+        }
+      ]
+    }
+  ]
+}
