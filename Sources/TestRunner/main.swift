@@ -232,16 +232,22 @@ private func sanChecks() throws {
 
 private func moveLookupChecks() throws {
     // EP-Schlag über move(from:to:) muss Flags vollständig mitbringen.
-    var epPos = try Position(fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")
-    let d5 = epPos.legalMoves().first { $0.uci == "d7d5" }
-    check(d5 != nil, "moveLookup: d7d5 legal")
-    epPos = epPos.make(d5!)
-    let ep = epPos.move(from: Square(file: 4, rank: 3), to: Square(file: 3, rank: 5))
-    check(ep != nil, "moveLookup: e4d6 EP gefunden")
+    // Legale Sequenz: e2e4 / Sc6 / e4e5 / d7d5 -> weißer EP-Schlag e5d6.
+    var p = try Position(fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    let seq = ["e2e4", "b8c6", "e4e5", "d7d5"]
+    for uci in seq {
+        let m = p.legalMoves().first { $0.uci == uci }
+        check(m != nil, "moveLookup: Sequenz \(uci) legal")
+        guard let m else { return }
+        p = p.make(m)
+    }
+    checkEqual(p.enPassant?.name ?? "-", "d6", "moveLookup: EP-Feld d6")
+    let ep = p.move(from: Square(file: 4, rank: 4), to: Square(file: 3, rank: 5))
+    check(ep != nil, "moveLookup: e5d6 EP gefunden")
     check(ep?.flags.contains(.enPassant) == true, "moveLookup: EP-Flag")
     check(ep?.flags.contains(.capture) == true, "moveLookup: Capture-Flag")
     if let ep {
-        check(epPos.make(ep).board[Square(file: 3, rank: 4).index] == nil, "moveLookup: d5-Bauer entfernt")
+        check(p.make(ep).board[Square(file: 3, rank: 4).index] == nil, "moveLookup: d5-Bauer entfernt")
     }
 }
 
