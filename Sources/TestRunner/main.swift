@@ -233,7 +233,7 @@ private func sanChecks() throws {
 private func moveLookupChecks() throws {
     // EP-Schlag über move(from:to:) muss Flags vollständig mitbringen.
     var epPos = try Position(fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")
-    let d5 = SAN.move(from: "d7d5", in: epPos)
+    let d5 = epPos.legalMoves().first { $0.uci == "d7d5" }
     check(d5 != nil, "moveLookup: d7d5 legal")
     epPos = epPos.make(d5!)
     let ep = epPos.move(from: Square(file: 4, rank: 3), to: Square(file: 3, rank: 5))
