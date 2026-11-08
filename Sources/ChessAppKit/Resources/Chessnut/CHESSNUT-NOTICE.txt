@@ -1,0 +1,13 @@
+Chessnut chess pieces
+Author: Alexis Luengas
+License: Apache License, Version 2.0 (see CHESSNUT-LICENSE.txt).
+
+Original SVG source:
+https://github.com/lichess-org/lila/tree/104a754b35740129fade423f920ad6de965031dd/public/piece/chessnut
+Lichess attribution and license listing:
+https://github.com/lichess-org/lila/blob/104a754b35740129fade423f920ad6de965031dd/COPYING.md
+
+The 12 original SVG files are preserved in Sources/.
+Modifications for ChessApp: rendered at 256x256 as transparent PNG images;
+classic uses a near-black fill, walnut uses ivory/brown, ocean uses ice/navy.
+No endorsement by the author or Lichess is implied.

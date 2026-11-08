@@ -35,7 +35,12 @@ public struct OpeningBook: Sendable {
         }
     }
 
-    // TODO(CLAUDE): Vollständige ECO-Datenbank und Bewertung der Eröffnungsphase ergänzen.
+    /// Nur tatsächlich gespeicherte Buchzüge, einschließlich Präfixen vor dem benannten Endpunkt.
+    public func contains(sanMoves: [String]) -> Bool {
+        !sanMoves.isEmpty && openings.contains { $0.moves.starts(with: sanMoves) }
+    }
+
+    // Named sequences are complete for A00–E99; transpositions need position-aware matching.
     public func match(sanMoves: [String]) -> Opening? {
         openings.filter { !$0.moves.isEmpty && sanMoves.starts(with: $0.moves) }
             .max { $0.moves.count < $1.moves.count }

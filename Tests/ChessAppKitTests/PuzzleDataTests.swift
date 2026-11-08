@@ -15,7 +15,9 @@ struct PuzzleDataTests {
     @Test func bundledSolutionsAreLegalAndMateLabelsAreTrue() throws {
         let url = try #require(ChessAppKitInfo.resourceBundle.url(forResource: "puzzles", withExtension: "json"))
         let puzzles = try JSONDecoder().decode([Puzzle].self, from: Data(contentsOf: url))
-        #expect(puzzles.count == 20)
+        #expect(puzzles.count >= 50)
+        #expect(puzzles.filter { $0.moves.count >= 4 }.count >= 6)
+        #expect(puzzles.contains { $0.themes.contains("mateIn2") })
         #expect(Set(puzzles.map(\.id)).count == puzzles.count)
         #expect(Set(puzzles.map(\.fen)).count == puzzles.count)
         var playerColors: Set<String> = []
@@ -24,6 +26,7 @@ struct PuzzleDataTests {
             #expect(!puzzle.themes.isEmpty)
             #expect(puzzle.moves.count >= 2 && puzzle.moves.count.isMultiple(of: 2))
             var position = try Position(fen: puzzle.fen)
+            #expect(!position.isInCheck(position.turn.flipped), "Side not to move cannot already be in check: \(puzzle.id)")
             for (index, uci) in puzzle.moves.enumerated() {
                 let move = try #require(position.legalMoves().first { $0.uci == uci }, "\(puzzle.id): \(uci)")
                 position = position.make(move)

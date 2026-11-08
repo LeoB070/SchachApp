@@ -29,62 +29,37 @@ public enum TimeControl: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+/// Einzelne Schachuhr als Pille: aktiv hell hervorgehoben, unter 30 s rot.
 struct ClockView: View {
-    let whiteTime: TimeInterval?
-    let blackTime: TimeInterval?
-    let activeColor: PieceColor?
-    let isRunning: Bool
+    let time: TimeInterval?
+    let isActive: Bool
 
     var body: some View {
-        HStack(spacing: 20) {
-            clockBadge(title: "Weiß", time: whiteTime, isActive: activeColor == .white)
-            clockBadge(title: "Schwarz", time: blackTime, isActive: activeColor == .black)
-        }
-    }
-
-    @ViewBuilder
-    private func clockBadge(title: String, time: TimeInterval?, isActive: Bool) -> some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(isActive && isRunning ? SwiftUI.Color.green : SwiftUI.Color.secondary.opacity(0.4))
-                .frame(width: 10, height: 10)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(formattedTime(time))
-                    .font(.system(.title3, design: .monospaced).bold())
-                    .foregroundStyle(isLowTime(time) && isActive ? SwiftUI.Color.red : SwiftUI.Color.primary)
-            }
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(isActive ? SwiftUI.Color.accentColor.opacity(0.12) : SwiftUI.Color.secondary.opacity(0.08))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(isActive ? SwiftUI.Color.accentColor : SwiftUI.Color.clear, lineWidth: 1.5)
-        )
+        let low = isActive && (time ?? .infinity) <= 30
+        Text(formattedTime(time))
+            .font(.system(size: 20, weight: .semibold, design: .monospaced))
+            .monospacedDigit()
+            .padding(.horizontal, 14)
+            .frame(minWidth: 104, minHeight: 38, alignment: .trailing)
+            .foregroundStyle(isActive ? (low ? SwiftUI.Color.white : SwiftUI.Color.black) : SwiftUI.Color.secondary)
+            .background(RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(isActive ? (low ? SwiftUI.Color.red : SwiftUI.Color.white) : SwiftUI.Color.secondary.opacity(0.12)))
+            .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(SwiftUI.Color.black.opacity(isActive ? 0.15 : 0), lineWidth: 1))
+            .shadow(color: .black.opacity(isActive ? 0.18 : 0), radius: 3, y: 1)
+            .animation(.easeInOut(duration: 0.15), value: isActive)
+            .accessibilityLabel("Uhr \(formattedTime(time))")
     }
 
     private func formattedTime(_ time: TimeInterval?) -> String {
-        guard let time = time else { return "∞" }
+        guard let time = time else { return "–:––" }
         let clamped = max(0, time)
         let minutes = Int(clamped) / 60
         let seconds = Int(clamped) % 60
         if clamped < 10 {
             let tenths = Int((clamped - Double(Int(clamped))) * 10)
-            return String(format: "%02d:%02d.%d", minutes, seconds, tenths)
-        } else {
-            return String(format: "%02d:%02d", minutes, seconds)
+            return String(format: "%d:%02d.%d", minutes, seconds, tenths)
         }
-    }
-
-    private func isLowTime(_ time: TimeInterval?) -> Bool {
-        guard let time = time else { return false }
-        return time <= 30
+        return String(format: "%d:%02d", minutes, seconds)
     }
 }

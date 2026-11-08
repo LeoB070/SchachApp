@@ -12,7 +12,7 @@ public struct Bot: Identifiable, Sendable, Equatable {
     public let elo: Int
     /// UCI-Skill-Level von 0 bis 20.
     public let skillLevel: Int
-    /// Wahrscheinlichkeit (0.0 ... 1.0), mit der der Bot eine Nebenvariante (MultiPV 2-4) statt des Bestzugs wählt.
+    /// Fehlerwahrscheinlichkeit: bis 1000 Elo zufälliger legaler Zug, darüber MultiPV-Nebenvariante.
     public let randomness: Double
     /// Basis-Bedenkzeit pro Zug in Millisekunden.
     public let movetimeMs: Int
@@ -48,7 +48,16 @@ public struct Bot: Identifiable, Sendable, Equatable {
     /// eine der Nebenvarianten (MultiPV 2-4). Schwache Bots machen so plausible,
     /// menschlich wirkende Patzer statt illegaler oder völlig absurder Züge.
     public func chooseMove(fen: String, engine: ChessEngine) async throws -> String {
+        try Task.checkCancellation()
+        let position = try Position(fen: fen)
+        let legalMoves = position.legalMoves()
+        guard !legalMoves.isEmpty else { return "0000" }
         let targetTimeMs = randomizedMovetime()
+        // shortcut: Elo below 1000 is estimated, calibrate against rated games before claiming measured ratings.
+        if elo <= 1000 && Double.random(in: 0..<1) < randomness {
+            try await Task.sleep(nanoseconds: UInt64(targetTimeMs) * 1_000_000)
+            return legalMoves.randomElement()!.uci
+        }
         let startTimestamp = Date()
 
         // 1. Engine konfigurieren

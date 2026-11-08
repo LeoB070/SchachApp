@@ -8,6 +8,22 @@ import ChessAppKit
         #expect(WinProbability.winPercent(cp: 2000) > 99.9)
     }
 
+    @Test func gameAccuracyPunishesBlundersHarderThanPlainMean() throws {
+        let start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        let black = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
+        // Weiß: 9 gute Züge (Accuracy 95) und ein Patzer (Accuracy 5); Schwarz spielt neutral.
+        let moves = (1...20).map { ply -> MoveAnalysis in
+            let isWhite = ply % 2 == 1
+            let acc = isWhite ? (ply == 11 ? 5.0 : 95.0) : 90.0
+            return MoveAnalysis(ply: ply, san: "x", fenBefore: isWhite ? start : black, fenAfter: start,
+                evalBefore: 0, evalAfter: 0, bestMove: "", classification: .good, accuracy: acc,
+                winPercentBefore: 50, winPercentAfter: ply == 11 ? 10 : 50, winPercentLoss: 0)
+        }
+        let white = AccuracyCalculator.gameAccuracy(for: .white, moves: moves)
+        #expect(white < 86 - 10) // einfacher Durchschnitt wäre 86
+        #expect(abs(AccuracyCalculator.gameAccuracy(for: .black, moves: moves) - 90) < 0.001)
+    }
+
     @Test func immediateEngineRepliesAreNotLost() async throws {
         let url = try makeEngineScript("echo 'bestmove e2e4'")
         defer { try? FileManager.default.removeItem(at: url) }

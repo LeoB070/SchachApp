@@ -1,32 +1,51 @@
 import SwiftUI
 
-/// Zugliste in SAN, paarweise "1. e4 e5" angeordnet.
+/// Zugliste in SAN als Tabelle: Nummer | Weiß | Schwarz, letzter Zug markiert.
 struct MoveListView: View {
     let sans: [String]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Züge").font(.subheadline).bold()
-            if sans.isEmpty {
-                Text("Noch keine Züge.").foregroundStyle(.secondary)
-            } else {
+        if sans.isEmpty {
+            Text("Noch keine Züge")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 2) {
+                    LazyVStack(spacing: 0) {
                         ForEach(Array(stride(from: 0, to: sans.count, by: 2)), id: \.self) { i in
-                            HStack(spacing: 4) {
+                            HStack(spacing: 0) {
                                 Text("\(i / 2 + 1).")
-                                Text(sans[i])
-                                if i + 1 < sans.count {
-                                    Text(sans[i + 1])
-                                }
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 38, alignment: .leading)
+                                cell(i)
+                                cell(i + 1)
                             }
-                            .font(.system(.body, design: .monospaced))
+                            .padding(.horizontal, 12)
+                            .frame(height: 26)
+                            .background(i / 2 % 2 == 1 ? SwiftUI.Color.secondary.opacity(0.06) : .clear)
+                            .id(i)
                         }
                     }
-                    .padding(.top, 4)
+                    .font(.system(size: 13, weight: .medium).monospacedDigit())
                 }
-                .frame(maxHeight: 300)
+                .onChange(of: sans.count) { _, count in
+                    withAnimation { proxy.scrollTo((count - 1) / 2 * 2, anchor: .bottom) }
+                }
             }
         }
+    }
+
+    @ViewBuilder
+    private func cell(_ index: Int) -> some View {
+        let isLast = index == sans.count - 1
+        Text(index < sans.count ? sans[index] : "")
+            .fontWeight(isLast ? .bold : .medium)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(RoundedRectangle(cornerRadius: 4)
+                .fill(isLast ? SwiftUI.Color.accentColor.opacity(0.18) : .clear))
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

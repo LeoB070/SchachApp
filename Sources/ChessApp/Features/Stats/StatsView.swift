@@ -6,6 +6,8 @@ import ChessAppKit
 struct StatsView: View {
     @Environment(\.managedObjectContext) private var context
 
+    @LocalState private var estimatedRating: Int? = nil
+    @LocalState private var ratedGames = 0
     @LocalState private var totalGames: Int = 0
     @LocalState private var whiteWins: Int = 0
     @LocalState private var blackWins: Int = 0
@@ -25,12 +27,23 @@ struct StatsView: View {
                     .font(.largeTitle)
                     .bold()
 
+                TrainingDashboardView(showDetails: true)
+
                 // Key metrics cards
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                    metricCard(title: "Partien gesamt", value: "\(totalGames)", icon: "gamecontroller.fill", color: .blue)
+                    metricCard(title: "Partien gesamt", value: "\(totalGames)", icon: "checkerboard.rectangle", color: .blue)
                     metricCard(title: "Puzzle-Rating", value: "\(puzzleRating)", icon: "brain.head.profile", color: .purple)
                     metricCard(title: "Puzzles gelöst", value: "\(solvedPuzzles)", icon: "checkmark.seal.fill", color: .green)
-                    metricCard(title: "Beste Serie", value: "\(bestStreak) 🔥", icon: "flame.fill", color: .orange)
+                    metricCard(title: "Beste Serie", value: "\(bestStreak)", icon: "flame.fill", color: .orange)
+                }
+
+                GroupBox("Deine geschätzte Partie-Elo") {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(estimatedRating.map { "≈ \($0) Elo" } ?? "Noch keine Wertung")
+                            .font(.title2.bold())
+                        Text("Durchschnitt aus \(ratedGames) deiner zuletzt analysierten Partien (Spielername „Du“, mindestens 10 eigene Züge). Unkalibrierte Orientierung mit Bot-Stärke als Bezug, keine offizielle Elo.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }.frame(maxWidth: .infinity, alignment: .leading).padding(.vertical, 8)
                 }
 
                 // Games summary
@@ -153,25 +166,37 @@ struct StatsView: View {
 
     private func loadStats() {
         let gamesReq: NSFetchRequest<SavedGame> = NSFetchRequest(entityName: "SavedGame")
-        if let games = try? context.fetch(gamesReq) {
-            totalGames = games.count
-            whiteWins = games.filter { $0.result == "1-0" }.count
-            blackWins = games.filter { $0.result == "0-1" }.count
-            draws = games.filter { $0.result == "1/2-1/2" }.count
+        let games = (try? context.fetch(gamesReq)) ?? []
+        totalGames = games.count
+        whiteWins = games.filter { $0.result == "1-0" }.count
+        blackWins = games.filter { $0.result == "0-1" }.count
+        draws = games.filter { $0.result == "1/2-1/2" }.count
 
-            var openingCounts: [String: Int] = [:]
-            for g in games {
-                if let name = g.openingName, !name.isEmpty {
-                    openingCounts[name, default: 0] += 1
-                }
+        var openingCounts: [String: Int] = [:]
+        for g in games {
+            if let name = g.openingName, !name.isEmpty {
+                openingCounts[name, default: 0] += 1
             }
-            topOpenings = openingCounts.sorted { $0.value > $1.value }.prefix(5).map { (name: $0.key, count: $0.value) }
         }
+        topOpenings = openingCounts.sorted { $0.value > $1.value }.prefix(5).map { (name: $0.key, count: $0.value) }
 
         let analyses: NSFetchRequest<GameAnalysisEntry> = NSFetchRequest(entityName: "GameAnalysisEntry")
         analyses.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
         analyses.fetchLimit = 30
-        accuracyHistory = ((try? context.fetch(analyses)) ?? []).reversed().map {
+        let entries = (try? context.fetch(analyses)) ?? []
+        var seen: Set<UUID> = []
+        let ratings: [Int] = entries.compactMap { entry in
+            guard let id = entry.gameID, seen.insert(id).inserted,
+                  let game = games.first(where: { $0.id == id }),
+                  (game.whitePlayer == "Du") != (game.blackPlayer == "Du"),
+                  let report = try? JSONDecoder().decode(GameAnalysis.self, from: entry.analysisJSON) else { return nil }
+            let opponentName = game.whitePlayer == "Du" ? game.blackPlayer : game.whitePlayer
+            let opponentElo = BotLibrary.allBots.first { BotLibrary.matchesSavedName(opponentName, bot: $0) }?.elo
+            return report.estimatedElo(for: game.whitePlayer == "Du" ? .white : .black, opponentElo: opponentElo)
+        }
+        ratedGames = ratings.count
+        estimatedRating = ratings.isEmpty ? nil : Int((Double(ratings.reduce(0, +)) / Double(ratings.count)).rounded())
+        accuracyHistory = entries.reversed().map {
             (id: $0.id, date: $0.createdAt, white: $0.accuracyWhite, black: $0.accuracyBlack)
         }
 

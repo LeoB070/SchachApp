@@ -33,6 +33,11 @@ struct AboutView: View {
                 Text("• **Eröffnungen, Puzzles & Lektionen:** Kleine lokale Beispielsammlung für diese App.")
                     .font(.callout)
 
+                Text("• **Schachfiguren:** Chessnut von Alexis Luengas, Apache-Lizenz 2.0. Farbvarianten für diese App angepasst.")
+                    .font(.callout)
+                Link("Figuren und Lizenznachweis", destination: URL(string: "https://github.com/lichess-org/lila/blob/master/COPYING.md")!)
+                    .font(.callout)
+
                 Text("• **Markenhinweis:** Diese Anwendung ist unabhängig und steht in keiner Verbindung zu Chess.com oder anderen kommerziellen Anbietern. Es werden keine proprietären Marken oder Grafiken Dritter genutzt.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -49,15 +54,18 @@ struct AboutView: View {
             .keyboardShortcut(.defaultAction)
         }
         .padding(24)
-        .frame(width: 480, height: 440)
+        .frame(width: 520, height: 560)
     }
 }
 
 struct SettingsView: View {
     @Environment(\.managedObjectContext) private var context
+    @AppStorage("appearance") private var appearance = "System"
+    @AppStorage("pieceTheme") private var pieceTheme = "Klassisch"
+    @AppStorage("moveSound") private var moveSound = MoveSound.pop.rawValue
     @LocalState private var enginePath: String = ""
-    @LocalState private var threads: Int = 4
-    @LocalState private var hashMB: Int = 256
+    @LocalState private var threads: Int = 8
+    @LocalState private var hashMB: Int = 512
     @LocalState private var analysisDepth: Int = 18
     @LocalState private var boardTheme: String = "Grün"
     @LocalState private var soundEnabled: Bool = true
@@ -66,10 +74,46 @@ struct SettingsView: View {
     @LocalState private var isLoaded: Bool = false
     @LocalState private var saveError: String?
 
-    private let themes = ["Grün", "Blau", "Holz"]
-
     var body: some View {
         Form {
+            Section("Darstellung") {
+                Picker("Erscheinungsbild", selection: $appearance) {
+                    ForEach(AppTheme.appearances, id: \.self) { Text($0).tag($0) }
+                }
+                .pickerStyle(.segmented)
+
+                Picker("Brettfarben", selection: $boardTheme) {
+                    ForEach(AppTheme.themes, id: \.self) { theme in
+                        Text(theme == "Holz" ? "Beige / Braun" : theme).tag(theme)
+                    }
+                }
+                .onChange(of: boardTheme) { save() }
+
+                Picker("Figurenfarben", selection: $pieceTheme) {
+                    ForEach(AppTheme.pieceThemes, id: \.self) { Text($0).tag($0) }
+                }
+                .pickerStyle(.segmented)
+
+                HStack(spacing: 0) {
+                    PieceView(color: .white, type: .king, side: 56)
+                        .frame(width: 72, height: 72)
+                        .background(AppTheme.lightSquare(boardTheme))
+                    PieceView(color: .black, type: .knight, side: 56)
+                        .frame(width: 72, height: 72)
+                        .background(AppTheme.darkSquare(boardTheme))
+                    PieceView(color: .white, type: .knight, side: 56)
+                        .frame(width: 72, height: 72)
+                        .background(AppTheme.lightSquare(boardTheme))
+                    PieceView(color: .black, type: .king, side: 56)
+                        .frame(width: 72, height: 72)
+                        .background(AppTheme.darkSquare(boardTheme))
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .accessibilityLabel("Vorschau der Brett- und Figurenfarben")
+                .accessibilityElement(children: .ignore)
+                .padding(.vertical, 6)
+            }
+
             Section("Engine (Stockfish)") {
                 HStack {
                     TextField("Pfad zur Engine", text: $enginePath)
@@ -95,17 +139,25 @@ struct SettingsView: View {
                     .onChange(of: analysisDepth) { save() }
             }
 
-            Section("Darstellung & Verhalten") {
-                Picker("Brett-Thema", selection: $boardTheme) {
-                    ForEach(themes, id: \.self) { theme in
-                        Text(theme).tag(theme)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .onChange(of: boardTheme) { save() }
-
+            Section("Verhalten") {
                 Toggle("Tonsignale aktivieren", isOn: $soundEnabled)
                     .onChange(of: soundEnabled) { save() }
+
+                HStack {
+                    Picker("Zugklang", selection: $moveSound) {
+                        ForEach(MoveSound.allCases, id: \.rawValue) { sound in
+                            Text(sound.title).tag(sound.rawValue)
+                        }
+                    }
+                    Button("Anhören", systemImage: "speaker.wave.2") {
+                        MoveSound.selected(enabled: soundEnabled)?.play()
+                    }
+                }
+                .disabled(!soundEnabled)
+
+                Text("Verwendet die auf deinem Mac installierten Systemklänge.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
                 Toggle("Zug-Animationen aktivieren", isOn: $animationsEnabled)
                     .onChange(of: animationsEnabled) { save() }

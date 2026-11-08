@@ -34,22 +34,20 @@ struct GameArchiveView: View {
     }
 
     var body: some View {
-        NavigationSplitView {
+        HStack(spacing: 0) {
             VStack(spacing: 0) {
                 // Search and Filter Bar
                 VStack(spacing: 8) {
                     TextField("Suche nach Spieler oder Eröffnung...", text: $searchText)
                         .textFieldStyle(.roundedBorder)
 
-                    HStack {
+                    VStack(alignment: .leading, spacing: 8) {
                         Picker("Ergebnis", selection: $filterResult) {
                             ForEach(filterOptions, id: \.self) { opt in
                                 Text(opt).tag(opt)
                             }
                         }
                         .pickerStyle(.segmented)
-
-                        Spacer()
 
                         Button(action: { showImportSheet = true }) {
                             Label("PGN Import", systemImage: "square.and.arrow.down")
@@ -119,20 +117,24 @@ struct GameArchiveView: View {
                 }
             }
             .navigationTitle("Archiv")
-            .frame(minWidth: 320)
-        } detail: {
-            if let game = selectedGame {
-                gameDetailView(game)
-            } else {
-                VStack(spacing: 12) {
-                    Image(systemName: "sidebar.left")
-                        .font(.system(size: 40))
-                        .foregroundStyle(.secondary)
-                    Text("Wähle eine Partie aus der Liste")
-                        .foregroundStyle(.secondary)
+            .frame(width: 310)
+            Divider()
+            Group {
+                if let game = selectedGame {
+                    gameDetailView(game)
+                } else {
+                    VStack(spacing: 12) {
+                        Image(systemName: "sidebar.left")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.secondary)
+                        Text("Wähle eine Partie aus der Liste")
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
         }
         .onAppear { loadGames() }
         .sheet(isPresented: $showImportSheet) {
@@ -155,7 +157,7 @@ struct GameArchiveView: View {
     private func gameDetailView(_ game: SavedGame) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                HStack {
+                VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("\(game.whitePlayer) – \(game.blackPlayer)")
                             .font(.title2).bold()
@@ -167,20 +169,17 @@ struct GameArchiveView: View {
                                 .foregroundStyle(Color.accentColor)
                         }
                     }
-                    Spacer()
-
-                    Button("Analysieren") { reviewGame = game; showReview = true }
-                    Button("PGN exportieren") { exportPGN(game) }
-                    Button {
-                        copyPGN(game)
-                    } label: {
-                        Label("PGN kopieren", systemImage: "doc.on.doc")
+                    HStack {
+                        Button("Analysieren") { reviewGame = game; showReview = true }
+                        Button("PGN exportieren") { exportPGN(game) }
                     }
-
-                    Button(role: .destructive) {
-                        deleteGame(game)
-                    } label: {
-                        Label("Löschen", systemImage: "trash")
+                    HStack {
+                        Button { copyPGN(game) } label: {
+                            Label("PGN kopieren", systemImage: "doc.on.doc")
+                        }
+                        Button(role: .destructive) { deleteGame(game) } label: {
+                            Label("Löschen", systemImage: "trash")
+                        }
                     }
                 }
 

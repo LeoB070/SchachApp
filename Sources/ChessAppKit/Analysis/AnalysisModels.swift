@@ -37,7 +37,7 @@ public enum MoveClassification: String, CaseIterable, Codable, Sendable {
         case .best: return "★"
         case .excellent: return "✓"
         case .good: return "✔"
-        case .book: return "📖"
+        case .book: return "≡"
         case .inaccuracy: return "?!"
         case .mistake: return "?"
         case .miss: return "✖"
@@ -51,8 +51,8 @@ public enum MoveClassification: String, CaseIterable, Codable, Sendable {
         case .brilliant: return "cyan"
         case .great: return "blue"
         case .best: return "green"
-        case .excellent: return "teal"
-        case .good: return "green"
+        case .excellent: return "gold"
+        case .good: return "olive"
         case .book: return "brown"
         case .inaccuracy: return "yellow"
         case .mistake: return "orange"
@@ -60,6 +60,12 @@ public enum MoveClassification: String, CaseIterable, Codable, Sendable {
         case .blunder: return "red"
         }
     }
+}
+
+public enum GamePhase: String, CaseIterable, Sendable {
+    case opening = "Eröffnung"
+    case middlegame = "Mittelspiel"
+    case endgame = "Endspiel"
 }
 
 /// Detailed evaluation and classification for an individual move in a game.
@@ -84,6 +90,13 @@ public struct MoveAnalysis: Codable, Sendable, Identifiable {
     public let winPercentAfter: Double
     /// Loss in win probability caused by the move: max(0.0, winPercentBefore - winPercentAfter).
     public let winPercentLoss: Double
+
+    public var phase: GamePhase {
+        let position = try? Position(fen: fenBefore)
+        let material = position?.board.compactMap { $0 }.filter { $0.type != .king }.count ?? 32
+        if material <= 10 { return .endgame }
+        return ply <= 20 ? .opening : .middlegame
+    }
 
     public init(
         id: UUID = UUID(),
@@ -118,6 +131,15 @@ public struct MoveAnalysis: Codable, Sendable, Identifiable {
 
 /// Overall analysis report for an entire chess game.
 public struct GameAnalysis: Codable, Sendable {
+    public func estimatedElo(for player: Color, opponentElo: Int? = nil) -> Int? {
+        let count = moves.filter {
+            ((try? Position(fen: $0.fenBefore))?.turn ?? ($0.ply % 2 == 1 ? .white : .black)) == player
+        }.count
+        return AccuracyCalculator.estimatedElo(
+            accuracy: player == .white ? accuracyWhite : accuracyBlack, moveCount: count,
+            opponentElo: opponentElo, opponentAccuracy: player == .white ? accuracyBlack : accuracyWhite)
+    }
+
     public let moves: [MoveAnalysis]
     public let accuracyWhite: Double
     public let accuracyBlack: Double

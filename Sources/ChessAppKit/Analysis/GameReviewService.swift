@@ -16,7 +16,7 @@ public struct GameReviewService: Sendable {
         self.openingBook = openingBook
     }
 
-    public func review(positions: [Position], moves: [Move], depth: Int = 18) -> AsyncThrowingStream<ReviewProgress, Error> {
+    public func review(positions: [Position], moves: [Move], depth: Int = 16) -> AsyncThrowingStream<ReviewProgress, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
                 do {
@@ -26,6 +26,7 @@ public struct GameReviewService: Sendable {
                     try await engine.start()
                     var analyses: [MoveAnalysis] = []
                     var sans: [String] = []
+                    let startsAtStandardPosition = positions[0].fen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
                     var before = try await evaluate(positions[0], depth: depth)
                     for index in moves.indices {
                         try Task.checkCancellation()
@@ -43,7 +44,8 @@ public struct GameReviewService: Sendable {
                         let bestMove = before.pv.first ?? ""
                         let classification = MoveClassifier.classify(context: .init(
                             moveUCI: move.uci, winPercentBefore: winBefore, winPercentAfter: winAfter,
-                            bestMoveUCI: bestMove
+                            bestMoveUCI: bestMove,
+                            isBook: startsAtStandardPosition && openingBook?.contains(sanMoves: sans) == true
                         ))
                         analyses.append(MoveAnalysis(
                             ply: index + 1, san: san, fenBefore: position.fen, fenAfter: positions[index + 1].fen,
@@ -51,7 +53,7 @@ public struct GameReviewService: Sendable {
                             classification: classification, accuracy: AccuracyCalculator.moveAccuracy(loss: loss),
                             winPercentBefore: winBefore, winPercentAfter: winAfter, winPercentLoss: loss
                         ))
-                        let opening = openingBook?.match(sanMoves: sans)
+                        let opening = startsAtStandardPosition ? openingBook?.match(sanMoves: sans) : nil
                         continuation.yield(ReviewProgress(completedPlies: index + 1, totalPlies: moves.count,
                             analysis: GameAnalysis(moves: analyses,
                                 accuracyWhite: AccuracyCalculator.gameAccuracy(for: .white, moves: analyses),
@@ -83,7 +85,7 @@ public struct GameReviewService: Sendable {
             return EngineInfo(depth: 0, cp: 0)
         }
         var result: EngineInfo?
-        for await info in engine.analyze(fen: position.fen, depth: max(1, depth), multiPV: 2) {
+        for await info in engine.analyze(fen: position.fen, depth: max(1, depth), multiPV: 1) {
             try Task.checkCancellation()
             if info.multiPV == 1, info.cp != nil || info.mate != nil { result = info }
         }

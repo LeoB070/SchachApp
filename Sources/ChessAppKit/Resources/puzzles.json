@@ -258,5 +258,437 @@
       "mateIn1",
       "openingMate"
     ]
+  },
+  {
+    "id": "p021",
+    "fen": "6k1/p7/8/8/8/8/4q3/4R1K1 b - - 0 1",
+    "moves": [
+      "a7a6",
+      "e1e2"
+    ],
+    "rating": 200,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p022",
+    "fen": "1k6/7p/8/8/8/8/3q4/1K1R4 b - - 0 1",
+    "moves": [
+      "h7h6",
+      "d1d2"
+    ],
+    "rating": 200,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p023",
+    "fen": "4r1k1/4Q3/8/8/8/8/P7/6K1 w - - 0 1",
+    "moves": [
+      "a2a3",
+      "e8e7"
+    ],
+    "rating": 200,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p024",
+    "fen": "1k1r4/3Q4/8/8/8/8/7P/1K6 w - - 0 1",
+    "moves": [
+      "h2h3",
+      "d8d7"
+    ],
+    "rating": 200,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p025",
+    "fen": "6k1/p7/8/8/8/5q2/8/3B2K1 b - - 0 1",
+    "moves": [
+      "a7a6",
+      "d1f3"
+    ],
+    "rating": 300,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p026",
+    "fen": "1k6/7p/8/8/8/2q5/8/1K2B3 b - - 0 1",
+    "moves": [
+      "h7h6",
+      "e1c3"
+    ],
+    "rating": 300,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p027",
+    "fen": "3b2k1/8/5Q2/8/8/8/P7/6K1 w - - 0 1",
+    "moves": [
+      "a2a3",
+      "d8f6"
+    ],
+    "rating": 300,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p028",
+    "fen": "1k2b3/8/2Q5/8/8/8/7P/1K6 w - - 0 1",
+    "moves": [
+      "h2h3",
+      "e8c6"
+    ],
+    "rating": 300,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p029",
+    "fen": "6k1/p7/8/8/8/4q3/8/3N3K b - - 0 1",
+    "moves": [
+      "a7a6",
+      "d1e3"
+    ],
+    "rating": 350,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p030",
+    "fen": "1k6/7p/8/8/8/3q4/8/K3N3 b - - 0 1",
+    "moves": [
+      "h7h6",
+      "e1d3"
+    ],
+    "rating": 350,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p031",
+    "fen": "3n3k/8/4Q3/8/8/8/P7/6K1 w - - 0 1",
+    "moves": [
+      "a2a3",
+      "d8e6"
+    ],
+    "rating": 350,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p032",
+    "fen": "k3n3/8/3Q4/8/8/8/7P/1K6 w - - 0 1",
+    "moves": [
+      "h2h3",
+      "e8d6"
+    ],
+    "rating": 350,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p033",
+    "fen": "6k1/p7/8/8/8/8/4r3/4Q1K1 b - - 0 1",
+    "moves": [
+      "a7a6",
+      "e1e2"
+    ],
+    "rating": 250,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p034",
+    "fen": "1k6/7p/8/8/8/8/3r4/1K1Q4 b - - 0 1",
+    "moves": [
+      "h7h6",
+      "d1d2"
+    ],
+    "rating": 250,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p035",
+    "fen": "4q1k1/4R3/8/8/8/8/P7/6K1 w - - 0 1",
+    "moves": [
+      "a2a3",
+      "e8e7"
+    ],
+    "rating": 250,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p036",
+    "fen": "1k1q4/3R4/8/8/8/8/7P/1K6 w - - 0 1",
+    "moves": [
+      "h2h3",
+      "d8d7"
+    ],
+    "rating": 250,
+    "themes": [
+      "hangingPiece"
+    ]
+  },
+  {
+    "id": "p037",
+    "fen": "8/P6k/8/8/8/8/8/6K1 b - - 0 1",
+    "moves": [
+      "h7h6",
+      "a7a8q"
+    ],
+    "rating": 400,
+    "themes": [
+      "promotion"
+    ]
+  },
+  {
+    "id": "p038",
+    "fen": "8/k6P/8/8/8/8/8/1K6 b - - 0 1",
+    "moves": [
+      "a7a6",
+      "h7h8q"
+    ],
+    "rating": 400,
+    "themes": [
+      "promotion"
+    ]
+  },
+  {
+    "id": "p039",
+    "fen": "6k1/8/8/8/8/8/p6K/8 w - - 0 1",
+    "moves": [
+      "h2h3",
+      "a2a1q"
+    ],
+    "rating": 400,
+    "themes": [
+      "promotion"
+    ]
+  },
+  {
+    "id": "p040",
+    "fen": "1k6/8/8/8/8/8/K6p/8 w - - 0 1",
+    "moves": [
+      "a2a3",
+      "h2h1q"
+    ],
+    "rating": 400,
+    "themes": [
+      "promotion"
+    ]
+  },
+  {
+    "id": "p041",
+    "fen": "6k1/p2q4/8/3N4/8/8/8/6K1 b - - 0 1",
+    "moves": [
+      "a7a6",
+      "d5f6",
+      "g8h8",
+      "f6d7"
+    ],
+    "rating": 650,
+    "themes": [
+      "fork"
+    ]
+  },
+  {
+    "id": "p042",
+    "fen": "1k6/4q2p/8/4N3/8/8/8/1K6 b - - 0 1",
+    "moves": [
+      "h7h6",
+      "e5c6",
+      "b8a8",
+      "c6e7"
+    ],
+    "rating": 650,
+    "themes": [
+      "fork"
+    ]
+  },
+  {
+    "id": "p043",
+    "fen": "6k1/8/8/8/3n4/8/P2Q4/6K1 w - - 0 1",
+    "moves": [
+      "a2a3",
+      "d4f3",
+      "g1h1",
+      "f3d2"
+    ],
+    "rating": 650,
+    "themes": [
+      "fork"
+    ]
+  },
+  {
+    "id": "p044",
+    "fen": "1k6/8/8/8/4n3/8/4Q2P/1K6 w - - 0 1",
+    "moves": [
+      "h2h3",
+      "e4c3",
+      "b1a1",
+      "c3e2"
+    ],
+    "rating": 650,
+    "themes": [
+      "fork"
+    ]
+  },
+  {
+    "id": "combo-0-20",
+    "fen": "rn2kb1r/p3qppp/2p2n2/1N2p1B1/2B1P3/1Q6/PPP2PPP/R3K2R b KQkq - 0 10",
+    "moves": [
+      "c6b5",
+      "c4b5",
+      "e8d8",
+      "e1c1"
+    ],
+    "rating": 1250,
+    "themes": [
+      "combination",
+      "advantage"
+    ],
+    "explanation": "Bxb5+ öffnet mit Schach die d-Linie. Nach Kd8 bringt O-O-O+ König und Turm gleichzeitig ins Spiel und setzt den Angriff fort."
+  },
+  {
+    "id": "combo-0-24",
+    "fen": "r3kb1r/p2nqppp/5n2/1B2p1B1/4P3/1Q6/PPP2PPP/2KR3R b kq - 2 12",
+    "moves": [
+      "a8d8",
+      "d1d7",
+      "f6d7",
+      "g5e7"
+    ],
+    "rating": 1290,
+    "themes": [
+      "combination",
+      "advantage",
+      "pin"
+    ],
+    "explanation": "Der Springer d7 ist durch den Läufer b5 an den König e8 gefesselt. Rxd7 beseitigt ihn; nach Nxd7 räumt der zweite Springer f6 die Diagonale g5–e7, sodass Bxe7 die Dame gewinnt."
+  },
+  {
+    "id": "combo-0-26",
+    "fen": "3rkb1r/p2Rqppp/5n2/1B2p1B1/4P3/1Q6/PPP2PPP/2K4R b k - 0 13",
+    "moves": [
+      "d8d7",
+      "h1d1",
+      "e7b4",
+      "g5f6"
+    ],
+    "rating": 1330,
+    "themes": [
+      "combination",
+      "advantage",
+      "pin"
+    ],
+    "explanation": "Der Turm d7 ist durch den Läufer b5 an den König e8 gefesselt und darf die d-Linie nicht verlassen. Rd1 erhöht deshalb den Druck; nach Qb4 gewinnt Bxf6 eine Figur."
+  },
+  {
+    "id": "combo-0-30",
+    "fen": "4kb1r/p2B1ppp/4qn2/4p1B1/4P3/1Q6/PPP2PPP/2KR4 b k - 0 15",
+    "moves": [
+      "f6d7",
+      "b3b8",
+      "d7b8",
+      "d1d8"
+    ],
+    "rating": 1370,
+    "themes": [
+      "combination",
+      "mateIn2"
+    ],
+    "explanation": "Qb8+ lenkt den Springer d7 von der d-Linie ab. Nach dem erzwungenen Nxb8 ist Rd8# matt: Der Läufer g5 deckt d8, der König findet kein Fluchtfeld."
+  },
+  {
+    "id": "combo-1-22",
+    "fen": "rnb1kb1r/p2p1ppp/2p2n2/1B3Nq1/4PpP1/3P4/PPP4P/RNBQ1KR1 b kq - 2 11",
+    "moves": [
+      "c6b5",
+      "h2h4",
+      "g5g6",
+      "h4h5",
+      "f6h5",
+      "g4h5"
+    ],
+    "rating": 1410,
+    "themes": [
+      "combination",
+      "advantage"
+    ],
+    "explanation": "Die Bauern h4 und h5 greifen die Dame mit Tempo an. Nach Qg6 und Nxh5 schlägt gxh5 den Springer; der Bauernvorstoß gewinnt Material."
+  },
+  {
+    "id": "combo-1-24",
+    "fen": "rnb1kb1r/p2p1ppp/5n2/1p3Nq1/4PpPP/3P4/PPP5/RNBQ1KR1 b kq - 0 12",
+    "moves": [
+      "g5g6",
+      "h4h5",
+      "f6h5",
+      "g4h5"
+    ],
+    "rating": 1450,
+    "themes": [
+      "combination",
+      "advantage"
+    ],
+    "explanation": "h5 greift die Dame g6 an. Die beste Verteidigung Nxh5 gibt den Springer für den Bauern; gxh5 vollendet den Materialgewinn."
+  },
+  {
+    "id": "combo-1-38",
+    "fen": "rnb1k1nr/p2p1ppp/3B4/1p1NPN1P/6P1/3P1Q2/PqP5/R4Kb1 b kq - 0 19",
+    "moves": [
+      "b2a1",
+      "f1e2",
+      "c8a6",
+      "d5c7",
+      "e8d8",
+      "c7a6"
+    ],
+    "rating": 1490,
+    "themes": [
+      "combination",
+      "advantage"
+    ],
+    "explanation": "Ke2 entzieht den König dem Angriff und aktiviert die Springeridee. Nach Ba6 folgt Nc7+ mit Schach; Kd8 erlaubt Nxa6 und gewinnt den Läufer zurück."
+  },
+  {
+    "id": "combo-2-36",
+    "fen": "r1bq1r2/ppp1nkpQ/3p3R/3P1p2/2B5/8/PP3PPP/R5K1 b - - 3 18",
+    "moves": [
+      "c8d7",
+      "c4e2",
+      "d8e8",
+      "e2h5",
+      "e7g6",
+      "h7g6"
+    ],
+    "rating": 1530,
+    "themes": [
+      "combination",
+      "advantage"
+    ],
+    "explanation": "Be2 bereitet Bh5+ vor. Auf Qe8 folgt Bh5+; die beste Abwehr Ng6 lässt Qxg6+ zu. Die Dame schlägt den blockierenden Springer und setzt den Königsangriff mit Schach fort."
   }
 ]

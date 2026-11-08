@@ -121,7 +121,7 @@ struct LessonView: View {
                             .font(.headline)
                             .foregroundStyle(SwiftUI.Color.accentColor)
 
-                        HStack(spacing: 24) {
+                        VStack(alignment: .leading, spacing: 20) {
                             BoardView(
                                 position: position,
                                 orientation: (try? Position(fen: lesson.fen ?? ""))?.turn ?? .white,
@@ -131,7 +131,7 @@ struct LessonView: View {
                                 selected: selectedSquare,
                                 onSquareTap: { handleSquareTap($0, solution: ex.solutionMove) }
                             )
-                            .frame(width: 360, height: 360)
+                            .frame(maxWidth: 360)
 
                             VStack(alignment: .leading, spacing: 14) {
                                 if exerciseSolved {
@@ -266,7 +266,7 @@ struct LessonListView: View {
     @LocalState private var loadError: String? = nil
 
     var body: some View {
-        NavigationSplitView {
+        HStack(spacing: 0) {
             List(courses, id: \.id, selection: $selectedCourse) { course in
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
@@ -283,49 +283,55 @@ struct LessonListView: View {
                 .tag(course)
             }
             .navigationTitle("Lektionen")
-            .frame(minWidth: 260)
-        } content: {
-            if let course = selectedCourse {
-                List(course.lessons, id: \.id, selection: $selectedLesson) { lesson in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(lesson.title)
-                                .font(.body).bold()
-                            if lesson.exercise != nil {
-                                Text("Mit interaktiver Übung")
-                                    .font(.caption2)
-                                    .foregroundStyle(SwiftUI.Color.accentColor)
+            .frame(width: 170)
+            Divider()
+            Group {
+                if let course = selectedCourse {
+                    List(course.lessons, id: \.id, selection: $selectedLesson) { lesson in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(lesson.title)
+                                    .font(.body).bold()
+                                if lesson.exercise != nil {
+                                    Text("Mit interaktiver Übung")
+                                        .font(.caption2)
+                                        .foregroundStyle(SwiftUI.Color.accentColor)
+                                }
+                            }
+                            Spacer()
+                            if isLessonDone(courseID: course.id, lessonID: lesson.id) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(SwiftUI.Color.green)
                             }
                         }
-                        Spacer()
-                        if isLessonDone(courseID: course.id, lessonID: lesson.id) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(SwiftUI.Color.green)
-                        }
+                        .padding(.vertical, 4)
+                        .tag(lesson)
                     }
-                    .padding(.vertical, 4)
-                    .tag(lesson)
-                }
-                .navigationTitle(course.title)
-                .frame(minWidth: 260)
-            } else {
-                Text("Wähle einen Kurs aus")
-                    .foregroundStyle(.secondary)
-            }
-        } detail: {
-            if let course = selectedCourse, let lesson = selectedLesson {
-                LessonView(courseID: course.id, lesson: lesson)
-                    .id("\(course.id)|\(lesson.id)")
-            } else {
-                VStack(spacing: 12) {
-                    Image(systemName: "book.pages")
-                        .font(.system(size: 40))
-                        .foregroundStyle(.secondary)
-                    Text(loadError ?? "Wähle eine Lektion zum Lernen aus")
+                    .navigationTitle(course.title)
+                } else {
+                    Text("Wähle einen Kurs aus")
                         .foregroundStyle(.secondary)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .frame(width: 180)
+            Divider()
+            Group {
+                if let course = selectedCourse, let lesson = selectedLesson {
+                    LessonView(courseID: course.id, lesson: lesson)
+                        .id("\(course.id)|\(lesson.id)")
+                } else {
+                    VStack(spacing: 12) {
+                        Image(systemName: "book.pages")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.secondary)
+                        Text(loadError ?? "Wähle eine Lektion zum Lernen aus")
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+            .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
         }
         .onChange(of: selectedCourse) { _, course in selectedLesson = course?.lessons.first }
         .onAppear {

@@ -35,7 +35,9 @@ func learningDataChecks() throws {
         return try JSONDecoder().decode(type, from: Data(contentsOf: url))
     }
     let puzzles = try load([PuzzleFixture].self, name: "puzzles")
-    checkEqual(puzzles.count, 20, "20 bundled puzzles")
+    check(puzzles.count >= 40, "At least 40 bundled puzzles")
+    check(puzzles.contains { $0.rating <= 400 }, "Beginner puzzles available")
+    check(Set(puzzles.flatMap(\.themes)).isSuperset(of: ["hangingPiece", "promotion", "fork"]), "New training themes")
     checkEqual(Set(puzzles.map(\.id)).count, puzzles.count, "Unique puzzle IDs")
     checkEqual(Set(puzzles.map(\.fen)).count, puzzles.count, "Distinct puzzle positions")
     var playerColors: Set<String> = []
@@ -48,7 +50,16 @@ func learningDataChecks() throws {
                 check(false, "\(puzzle.id) illegal move \(uci)")
                 break
             }
+            if puzzle.themes.contains("hangingPiece") && index == 1 {
+                check(move.flags.contains(.capture), "\(puzzle.id) wins a piece")
+            }
+            if puzzle.themes.contains("promotion") && index == 1 {
+                check(move.promotion == .queen, "\(puzzle.id) promotes to queen")
+            }
             position = position.make(move)
+            if puzzle.themes.contains("fork") && index == 1 {
+                check(position.isInCheck(position.turn), "\(puzzle.id) fork starts with check")
+            }
             if index == 0 { playerColors.insert(position.turn == .white ? "white" : "black") }
         }
         if puzzle.themes.contains(where: { $0.lowercased().contains("mate") }) {

@@ -53,7 +53,8 @@ public enum MoveClassifier {
     /// - Parameter context: The evaluation context for this move.
     /// - Returns: The MoveClassification.
     public static func classify(context: Context) -> MoveClassification {
-        // TODO(CLAUDE): Brilliant, Great, Miss und Book anhand verlässlicher Kontextdaten bewerten.
+        if context.isBook { return .book }
+        // TODO(CLAUDE): Brilliant, Great und Miss anhand verlässlicher Kontextdaten bewerten.
         let loss = max(0.0, context.winPercentBefore - context.winPercentAfter)
 
         // Check if move matches engine top recommendation
@@ -91,13 +92,13 @@ public enum MoveClassifier {
         }
 
         // 9. Mistake (?)
-        // Loss <= 20.0%
-        if loss <= 20.0 {
+        // Loss <= 15.0% (Lichess-Grenze; Chess.com nutzt 20%)
+        if loss <= 15.0 {
             return .mistake
         }
 
         // 10. Blunder (??)
-        // Significant loss > 20.0%
+        // Significant loss > 15.0%
         return .blunder
     }
 

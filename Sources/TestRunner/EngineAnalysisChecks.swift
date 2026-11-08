@@ -2,11 +2,43 @@ import Foundation
 import ChessAppKit
 
 func engineAnalysisChecks() async throws {
+    checkEqual(AccuracyCalculator.estimatedElo(accuracy: 80, moveCount: 9), nil, "Keine Elo bei zu wenigen Zügen")
+    checkEqual(AccuracyCalculator.estimatedElo(accuracy: .nan, moveCount: 20), nil, "Keine Elo bei ungültiger Accuracy")
+    checkEqual(AccuracyCalculator.estimatedElo(accuracy: -10, moveCount: 20), 400, "Elo-Untergrenze")
+    checkEqual(AccuracyCalculator.estimatedElo(accuracy: 110, moveCount: 20), 2000, "Vorsichtige Elo-Obergrenze ohne Ratingkontext")
+    check(AccuracyCalculator.estimatedElo(accuracy: 90, moveCount: 20)! > AccuracyCalculator.estimatedElo(accuracy: 60, moveCount: 20)!, "Höhere Accuracy ergibt höhere Elo-Schätzung")
+    check(AccuracyCalculator.estimatedElo(accuracy: 90, moveCount: 20)! < 1800, "90 Prozent sind keine Meister-Elo")
+    checkEqual(AccuracyCalculator.estimatedElo(accuracy: 90, moveCount: 30, opponentElo: 500, opponentAccuracy: 60), 850, "Hohe Accuracy gegen Emil bleibt gegnerbezogen")
+    checkEqual(AccuracyCalculator.estimatedElo(accuracy: 70, moveCount: 30, opponentElo: 500, opponentAccuracy: 70), 500, "Gleiche Genauigkeit bleibt am Referenzrating")
+    checkEqual(AccuracyCalculator.estimatedElo(accuracy: 100, moveCount: 30, opponentElo: 500, opponentAccuracy: 0), 900, "Eine Partie begrenzt den Abstand zum Referenzrating")
+    checkEqual(AccuracyCalculator.estimatedElo(accuracy: 90, moveCount: 30, opponentElo: 500, opponentAccuracy: .nan), nil, "Ungültige Gegner-Accuracy wird abgewiesen")
+    checkEqual(AccuracyCalculator.estimatedElo(accuracy: .infinity, moveCount: 30), nil, "Unendliche Accuracy wird abgewiesen")
     check(abs(AccuracyCalculator.moveAccuracy(loss: 10) - (103.1668 * exp(-0.04354 * 10) - 3.1669)) < 0.000001,
           "Zug-Accuracy entspricht der vorgegebenen Formel")
+    do {
+        let start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        let black = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
+        let moves = (1...20).map { ply -> MoveAnalysis in
+            let isWhite = ply % 2 == 1
+            return MoveAnalysis(ply: ply, san: "x", fenBefore: isWhite ? start : black, fenAfter: start,
+                evalBefore: 0, evalAfter: 0, bestMove: "", classification: .good,
+                accuracy: isWhite ? (ply == 11 ? 5 : 95) : 90,
+                winPercentBefore: 50, winPercentAfter: ply == 11 ? 10 : 50, winPercentLoss: 0)
+        }
+        let partial = GameAnalysis(moves: Array(moves.prefix(19)), accuracyWhite: 80, accuracyBlack: 60)
+        check(partial.estimatedElo(for: .white) != nil, "Zehn weiße Züge erlauben Schätzung")
+        checkEqual(partial.estimatedElo(for: .black), nil, "Neun schwarze Züge erlauben keine Schätzung")
+        let blackStart = GameAnalysis(moves: Array(repeating: moves[1], count: 10), accuracyWhite: 80, accuracyBlack: 60)
+        check(blackStart.estimatedElo(for: .black) != nil, "Elo zählt die Seite anhand der Stellung")
+        checkEqual(blackStart.estimatedElo(for: .white), nil, "Keine Schätzung für eine Seite ohne Züge")
+        let white = AccuracyCalculator.gameAccuracy(for: .white, moves: moves)
+        check(white < 76, "Ein Patzer drückt die Partie-Genauigkeit deutlich unter den Schnitt (\(white))")
+        check(abs(AccuracyCalculator.gameAccuracy(for: .black, moves: moves) - 90) < 0.001, "Konstante Genauigkeit bleibt erhalten")
+    }
     check(WinProbability.winPercent(cp: 2000) > 99.9, "Gewinnwahrscheinlichkeit ohne künstliche cp-Begrenzung")
     let book = try OpeningBook()
-    check(book.openings.count >= 30, "Mindestens 30 Beispiel-Eröffnungen")
+    checkEqual(book.openings.count, 3865, "Offizielle Eröffnungsdatenbank vollständig geladen")
+    checkEqual(Set(book.openings.map(\.eco)).count, 500, "Alle 500 ECO-Codes enthalten")
     let prefixBook = OpeningBook(openings: [
         .init(eco: "B00", name: "King Pawn", moves: ["e4"]),
         .init(eco: "B20", name: "Sicilian", moves: ["e4", "c5"])
@@ -68,6 +100,27 @@ func engineAnalysisChecks() async throws {
     } catch { check(error as? EngineError == .timeout, "Fehlender UCI-Handshake endet mit Timeout") }
     check(Date().timeIntervalSince(timeoutStart) < 6, "Handshake-Timeout hängt nicht an Continuation")
     await unresponsive.stop()
+
+    let pidFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    let stubborn = try engineFixture(goResponse: "trap '' TERM; echo $$ > '\(pidFile.path)'; while :; do :; done")
+    defer {
+        try? FileManager.default.removeItem(at: stubborn)
+        try? FileManager.default.removeItem(at: pidFile)
+    }
+    let stubbornEngine = try UCIEngine(executablePath: stubborn.path)
+    try await stubbornEngine.start()
+    let stubbornSearch = Task { try await stubbornEngine.bestMove(fen: start.fen, movetimeMs: 1) }
+    for _ in 0..<100 where !FileManager.default.fileExists(atPath: pidFile.path) {
+        try await Task.sleep(nanoseconds: 10_000_000)
+    }
+    let pid = Int32(try String(contentsOf: pidFile, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines))!
+    defer { if kill(pid, 0) == 0 { kill(pid, SIGKILL) } }
+    await stubbornEngine.stop()
+    _ = try? await stubbornSearch.value
+    for _ in 0..<150 where kill(pid, 0) == 0 {
+        try await Task.sleep(nanoseconds: 10_000_000)
+    }
+    check(kill(pid, 0) != 0, "Engine-Stopp beendet auch Prozesse, die SIGTERM ignorieren")
 
     if let path = EngineLocator.locateEngine() {
         let stockfish = try UCIEngine(executablePath: path, settings: EngineSettings(threads: 1, hashMB: 16))

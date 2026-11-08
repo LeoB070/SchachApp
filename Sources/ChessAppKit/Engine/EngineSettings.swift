@@ -2,7 +2,7 @@ import Foundation
 
 /// Konfiguration für die Schach-Engine (UCI-Parameter und Analysetiefe).
 public struct EngineSettings: Sendable, Equatable, Codable {
-    /// Anzahl der CPU-Threads für die Engine (mindestens 1, Standard: 4).
+    /// Anzahl der CPU-Threads für die Engine (mindestens 1, Standard: alle verfügbaren Kerne).
     public var threads: Int
 
     /// Größe der Transpositionstabelle in Megabyte (mindestens 1 MB, Standard: 256 MB).
@@ -17,16 +17,16 @@ public struct EngineSettings: Sendable, Equatable, Codable {
     /// Elo-Zahl bei limitierter Stärke (Bereich üblicherweise 1320...3190, Standard: 2500).
     public var uciElo: Int
 
-    /// Standardtiefe für automatische Partienanalysen (Halbzüge, Standard: 18).
+    /// Standardtiefe für automatische Partienanalysen (Halbzüge, Standard: 16).
     public var analysisDepth: Int
 
     public init(
-        threads: Int = 4,
-        hashMB: Int = 256,
+        threads: Int = min(8, max(1, ProcessInfo.processInfo.activeProcessorCount - 2)),
+        hashMB: Int = 512,
         skillLevel: Int = 20,
         limitStrength: Bool = false,
         uciElo: Int = 2500,
-        analysisDepth: Int = 18
+        analysisDepth: Int = 16
     ) {
         self.threads = max(1, threads)
         self.hashMB = max(1, hashMB)

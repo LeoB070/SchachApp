@@ -39,8 +39,8 @@ enum ChessDataModel {
         entity("AppSettings", for: AppSettings.self, uniqueKeys: ["key"], attributes: [
             attribute("key", .stringAttributeType, def: "app"),
             attribute("enginePath", .stringAttributeType, optional: true),
-            attribute("threads", .integer64AttributeType, def: 4),
-            attribute("hashMB", .integer64AttributeType, def: 256),
+            attribute("threads", .integer64AttributeType, def: 8),
+            attribute("hashMB", .integer64AttributeType, def: 512),
             attribute("skillLevel", .integer64AttributeType, def: 20),
             attribute("limitStrength", .booleanAttributeType, def: false),
             attribute("uciElo", .integer64AttributeType, def: 2500),

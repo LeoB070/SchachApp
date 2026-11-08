@@ -1,0 +1,12 @@
+Chess opening names — lichess-org/chess-openings
+Source: https://github.com/lichess-org/chess-openings
+Pinned revision: 3ba6b20d31b2e6125cb0e6a2e792f400717d9d39
+Source files: a.tsv, b.tsv, c.tsv, d.tsv, e.tsv
+License: CC0 1.0 Universal (see OPENINGS-CC0.txt)
+
+Snapshot contains 3,865 opening records covering all 500 ECO codes A00–E99.
+Converted TSV fields eco/name/pgn to JSON eco/name/moves. PGN move-number
+tokens were removed; SAN tokens and English opening names are preserved.
+All sequences were legally replayed using this app's Swift chess core.
+This is a named-sequence collection, not a complete opening tree or a
+transposition-aware position database.

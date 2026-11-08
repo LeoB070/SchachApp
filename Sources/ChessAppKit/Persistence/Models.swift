@@ -23,12 +23,12 @@ public class AppSettings: NSManagedObject {
         }
         let settings = AppSettings(context: context)
         settings.key = "app"
-        settings.threads = 4
-        settings.hashMB = 256
+        settings.threads = Int64(min(8, max(1, ProcessInfo.processInfo.activeProcessorCount - 2)))
+        settings.hashMB = 512
         settings.skillLevel = 20
         settings.limitStrength = false
         settings.uciElo = 2500
-        settings.analysisDepth = 18
+        settings.analysisDepth = 16
         settings.boardTheme = "Grün"
         settings.soundEnabled = true
         settings.animationsEnabled = true

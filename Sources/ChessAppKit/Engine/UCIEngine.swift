@@ -36,7 +36,7 @@ public actor UCIEngine: ChessEngine {
     deinit {
         readerTask?.cancel()
         analysisTimeout?.cancel()
-        if let process, process.isRunning { process.terminate() }
+        if let process { Self.shutdown(process) }
         #if canImport(AppKit)
         if let appTerminationObserver { NotificationCenter.default.removeObserver(appTerminationObserver) }
         #endif
@@ -133,7 +133,7 @@ public actor UCIEngine: ChessEngine {
         appTerminationObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.willTerminateNotification, object: nil, queue: .main
         ) { [weak newProcess] _ in
-            if let newProcess, newProcess.isRunning { newProcess.terminate() }
+            if let newProcess { Self.shutdown(newProcess) }
         }
         #endif
         readerTask = Task.detached(priority: .utility) { [weak self] in
@@ -252,14 +252,22 @@ public actor UCIEngine: ChessEngine {
         process = nil
         try? input?.fileHandleForWriting.close()
         input = nil
-        if let oldProcess, oldProcess.isRunning { oldProcess.terminate() }
-        // TODO(CLAUDE): Beendigung bestätigen und bei nicht reagierenden Prozessen eskalieren.
+        if let oldProcess { Self.shutdown(oldProcess) }
         let continuation = responseContinuation
         responseContinuation = nil
         responseID = nil
         expectedResponse = nil
         continuation?.resume(throwing: error)
         finishAnalysis()
+    }
+
+    private nonisolated static func shutdown(_ process: Process) {
+        guard process.isRunning else { return }
+        process.terminate()
+        // Ein defektes Binary darf nach Abbruch keine Hintergrundsuche fortsetzen.
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.5) {
+            if process.isRunning { kill(process.processIdentifier, SIGKILL) }
+        }
     }
 
     private func sendLine(_ line: String) throws {
