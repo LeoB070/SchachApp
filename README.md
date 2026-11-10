@@ -4,9 +4,9 @@
 
 ### Ein guter Zug. Eine neue Idee. Dein nächster Schritt.
 
-Eine persönliche Schach-App für den Mac — zum Spielen, Verstehen und Besserwerden.
+Eine persönliche Schach-App für macOS und Windows — zum Spielen, Verstehen und Besserwerden.
 
-**Offline · Einzeltraining · SwiftUI · Stockfish als lokale Engine**
+**Offline · Einzeltraining · SwiftUI für Mac · C# / Avalonia für Windows · lokale Stockfish-Engine**
 
 [App herunterladen](https://github.com/LeoB070/SchachApp/releases) · [Loslegen](#auf-deinem-mac-loslegen) · [Stockfish installieren](#stockfish-die-engine-hinter-dem-brett)
 
@@ -24,6 +24,9 @@ Onlinegegner und in deinem eigenen Tempo. Nach Installation der separaten Engine
 bleiben Partien, Analyse und Training auf deinem Mac.
 
 ## Was dich am Brett erwartet
+
+Dieser ausführliche Funktionsüberblick beschreibt die **Mac-Version**. Der aktuelle
+Windows-Umfang und seine Unterschiede stehen im Schnellstart weiter unten.
 
 | Spielen | Verstehen | Dranbleiben |
 |---|---|---|
@@ -43,6 +46,99 @@ bleiben Partien, Analyse und Training auf deinem Mac.
 ![Partierückblick mit Brett, Analyse und entscheidenden Momenten](docs/images/club-review.png)
 
 ![Endspiele am Brett: Turmmatt, Damenmatt und Bauernumwandlung](docs/images/club-endgames.png)
+
+## Schnellstart: Mac und Windows
+
+Das Repository bleibt privat. Melde dich auf beiden Geräten mit deinem
+GitHub-Account an (bei `git clone` über den Git Credential Manager oder vorher
+mit `gh auth login`). Für deinen eigenen Account ist keine Einladung nötig. Beide
+Apps laufen lokal; Stockfish wird separat installiert. Die Mac-Version bleibt
+in Swift, die Windows-Version liegt unter [`Windows/`](Windows/).
+Partien und Einstellungen bleiben pro Gerät lokal; zum Austausch von Partien
+PGN exportieren und auf dem anderen Gerät importieren. Git synchronisiert den
+Programmcode, nicht deine gespeicherten Partien.
+
+### macOS — SwiftUI
+
+Voraussetzungen: macOS 14+, Swift 6 / Xcode Command Line Tools, Git;
+bisher auf Apple Silicon geprüft. Stockfish zum Beispiel mit `brew install stockfish`.
+
+```sh
+git clone https://github.com/LeoB070/SchachApp.git
+cd SchachApp
+./make-app.sh
+open dist/ChessApp.app
+```
+
+Für den Entwicklungsstart genügt `./build.sh run ChessApp`.
+
+### Windows — C# und Avalonia
+
+Voraussetzungen: Windows 10/11 x64, [Git](https://git-scm.com/downloads/win)
+und das [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+(oder ein neueres kompatibles SDK). In PowerShell:
+
+```powershell
+git clone https://github.com/LeoB070/SchachApp.git
+cd SchachApp
+dotnet run --project Windows/ChessClub
+```
+
+[Stockfish für Windows herunterladen](https://stockfishchess.org/download/),
+entpacken und in der App die ausführbare `.exe` auswählen. Die Engine wird
+nicht aus dem Internet nachgeladen. Ohne Engine sind Engine-Bot und Analyse
+nicht verfügbar.
+
+Eine eigenständig startbare Windows-App inklusive .NET-Laufzeit erzeugen:
+
+```powershell
+dotnet publish Windows/ChessClub/ChessClub.csproj -c Release -r win-x64 --self-contained true -o dist/windows
+.\dist\windows\DeinSchachclub.exe
+```
+
+Zum Weitergeben den **gesamten Ordner** `dist/windows` zippen. Stockfish ist
+separat einzurichten. Der GitHub-Workflow **Windows desktop** baut denselben
+Ordner auf Windows und stellt ihn als herunterladbares Build-Artefakt bereit.
+
+Kernprüfungen ohne Oberfläche starten:
+
+```powershell
+dotnet run --project Windows/ChessClub.SelfTest -c Release
+```
+
+### Aktueller Windows-Umfang
+
+Die Windows-App übernimmt Palette, Startseitenaufbau, Emil-Pixelporträt,
+Brettfarben und Originalfiguren. Plattformtypische Controls unterscheiden sich;
+die Darstellung ist an die Mac-App angelehnt und nicht pixelidentisch.
+
+| In Windows vorhanden | Bisher nur in der Mac-Version |
+|---|---|
+| Lokales Spiel für zwei Personen oder gegen Stockfish, vier Botstufen, freie Farbwahl, Umwandlung | Schachuhr und 15 individuelle Botpersönlichkeiten |
+| Normale Stellungsanalyse und Tiefanalyse, FEN laden, Partieverlauf durchgehen | Vollständige Partieauswertung mit Accuracy, Zugklassen und Bewertungsgraph |
+| 52 Puzzles, Lektionen und Endspielübungen, lokaler Abschlussfortschritt | Puzzle-Rating, geplante Wiederholungen und automatische Aufgaben aus eigenen Fehlern |
+| Eröffnungslexikon, PGN-Import/-Export und lokales Partienarchiv | Eigene Eröffnungsvarianten aktiv trainieren und persönliche Trainingsempfehlungen |
+| Helle/dunkle Darstellung, fünf Brettfarben und drei Figurensätze | Vollständige Funktionsgleichheit der beiden Apps |
+
+Die Windows-Daten liegen unter `%LOCALAPPDATA%\DeinSchachclub`.
+Beim normalen Beenden wird eine gespielte Partie archiviert; eine laufende
+Partie wird nach einem Neustart nicht automatisch am Brett fortgesetzt.
+
+### Tiefanalyse
+
+Die Tiefanalyse untersucht die **aktuell angezeigte Brettstellung**, nicht
+automatisch jede Stellung der gesamten Partie. Sie verwendet ein eigenes Ressourcenprofil:
+verfügbare CPU-Threads und RAM werden automatisch erkannt, mit Reserven für
+Betriebssystem und Oberfläche. Normales Spielen behält seine eigenen Parameter.
+Die Oberfläche zeigt die gewählten Ressourcen sowie den tatsächlichen
+Analysefortschritt; eine laufende Suche lässt sich abbrechen. Das Zeitbudget
+beträgt höchstens 30 Minuten pro Stellung. Bei 16 erkannten logischen Prozessoren
+(z. B. deinem Ryzen mit aktiviertem SMT) verwendet das Profil 14 Threads und
+Zieltiefe 30; der Hash-Speicher richtet sich nach dem RAM und ist auf 4 GB begrenzt.
+
+Mehr Threads sind keine garantierte Suchtiefe. Komplexe Stellungen brauchen
+auch auf einem Ryzen 7 deutlich länger; entscheidend ist die angezeigte,
+tatsächlich erreichte Tiefe. [Stockfish erklärt Threads und Hash](https://official-stockfish.github.io/docs/stockfish-wiki/Stockfish-FAQ.html).
 
 ## Auf deinem Mac loslegen
 

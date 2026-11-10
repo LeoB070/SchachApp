@@ -2,6 +2,15 @@ import Foundation
 import ChessAppKit
 
 func engineAnalysisChecks() async throws {
+    let ryzen = DeepAnalysisProfile(processorCount: 16, memoryBytes: 32 * 1024 * 1024 * 1024)
+    checkEqual(ryzen.threads, 14, "Tiefanalyse lässt zwei logische CPUs frei")
+    check(ryzen.depth > 16, "Tiefanalyse sucht tiefer als Standardanalyse")
+    let small = DeepAnalysisProfile(processorCount: 1, memoryBytes: 512 * 1024 * 1024)
+    checkEqual(small.threads, 1, "Tiefanalyse funktioniert mit einer CPU")
+    check(small.hashMB <= 64, "Hash lässt auf kleinem Rechner RAM frei")
+    let large = DeepAnalysisProfile(processorCount: 256, memoryBytes: UInt64.max)
+    check(large.hashMB <= 4096 && large.threads <= 32, "Tiefanalyse begrenzt Ressourcen")
+
     checkEqual(AccuracyCalculator.estimatedElo(accuracy: 80, moveCount: 9), nil, "Keine Elo bei zu wenigen Zügen")
     checkEqual(AccuracyCalculator.estimatedElo(accuracy: .nan, moveCount: 20), nil, "Keine Elo bei ungültiger Accuracy")
     checkEqual(AccuracyCalculator.estimatedElo(accuracy: -10, moveCount: 20), 400, "Elo-Untergrenze")
@@ -90,6 +99,25 @@ func engineAnalysisChecks() async throws {
     check(Date().timeIntervalSince(cancellationStart) < 2, "Engine-Abbruch löst Continuation zeitnah auf")
     await cancellable.stop()
 
+    let bounded = try UCIEngine(executablePath: silent.path, analysisTimeoutSeconds: 1)
+    try await bounded.start()
+    let streamStart = Date()
+    for await _ in bounded.analyze(fen: start.fen, depth: 30, multiPV: 3) {}
+    check(Date().timeIntervalSince(streamStart) < 3, "Tiefanalyse beendet Stream am Zeitbudget")
+    await bounded.stop()
+
+    let streamEngine = try UCIEngine(executablePath: silent.path)
+    try await streamEngine.start()
+    let streamSearch = Task {
+        for await _ in streamEngine.analyze(fen: start.fen, depth: 30, multiPV: 3) {}
+    }
+    try await Task.sleep(nanoseconds: 100_000_000)
+    let streamCancelStart = Date()
+    streamSearch.cancel()
+    await streamSearch.value
+    check(Date().timeIntervalSince(streamCancelStart) < 2, "Tiefanalyse-Stream ist zeitnah abbrechbar")
+    await streamEngine.stop()
+
     let noHandshake = try engineFixture(goResponse: ":", handshake: ":")
     defer { try? FileManager.default.removeItem(at: noHandshake) }
     let unresponsive = try UCIEngine(executablePath: noHandshake.path)
@@ -130,7 +158,15 @@ func engineAnalysisChecks() async throws {
         var lastInfo: EngineInfo?
         for await info in stockfish.analyze(fen: start.fen, depth: 3, multiPV: 2) { lastInfo = info }
         check(lastInfo != nil, "Stockfish liefert Analyse und beendet den Stream")
+        let deepSearch = Task {
+            for await _ in stockfish.analyze(fen: start.fen, depth: 60, multiPV: 3) {}
+        }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let deepCancelStart = Date()
+        deepSearch.cancel()
+        await deepSearch.value
         await stockfish.stop()
+        check(Date().timeIntervalSince(deepCancelStart) < 2, "Lokale Stockfish-Tiefanalyse wird zeitnah abgebrochen")
     } else {
         print("SKIP Stockfish-Smoke-Test: kein lokales Binary")
     }

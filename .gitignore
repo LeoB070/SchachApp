@@ -15,3 +15,9 @@ dist/
 *.p12
 *.key
 Sources/ChessAppKit/Resources/Stockfish/stockfish*
+
+# Windows / .NET
+**/bin/
+**/obj/
+.vs/
+*.user

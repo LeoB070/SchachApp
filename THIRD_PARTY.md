@@ -5,7 +5,7 @@
 Stockfish wird unabhängig installiert und als separater UCI-Prozess genutzt.
 Es wird weder als Binärdatei noch als Quellcode im Repository oder App-Download mitgeliefert.
 
-- [Download für macOS](https://stockfishchess.org/download/)
+- [Download für macOS und Windows](https://stockfishchess.org/download/)
 - [Quellcode und GPLv3-Lizenz](https://github.com/official-stockfish/Stockfish)
 - [Offizielle Regeln zur Integration und Weitergabe](https://official-stockfish.github.io/docs/stockfish-wiki/Developers.html#terms-of-use)
 
@@ -29,3 +29,18 @@ der Lizenztext in [OPENINGS-CC0.txt](Sources/ChessAppKit/Resources/OPENINGS-CC0.
 
 Es werden keine Kurse, Erklärtexte, Markenbilder oder Aufgabensammlungen kommerzieller
 Schachplattformen übernommen. Die Funktionsrecherche dient als Anregung für eigene Implementierungen.
+
+
+## Windows-App (.NET / Avalonia)
+
+Die Windows-App verwendet Avalonia (MIT) und Gera.Chess (MIT) über NuGet.
+Die exakten Paketversionen stehen in `Windows/ChessClub/ChessClub.csproj`.
+
+- [Avalonia — Quellcode und Lizenz](https://github.com/AvaloniaUI/Avalonia)
+- [Gera.Chess — NuGet-Paket und Lizenzangaben](https://www.nuget.org/packages/Gera.Chess/)
+
+Die Windows-App verwendet dieselben Chessnut-Figuren und CC0-Eröffnungsdaten;
+die zugehörigen Lizenz- und Herkunftshinweise werden als Ressourcen mitkopiert.
+
+Die über `Avalonia.Fonts.Inter` bereitgestellte Schrift Inter steht unter
+[SIL Open Font License 1.1](https://github.com/rsms/inter/blob/master/LICENSE.txt).

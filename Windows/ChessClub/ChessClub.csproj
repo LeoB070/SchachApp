@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>DeinSchachclub</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.23" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.23" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.23" />
+    <PackageReference Include="Gera.Chess" Version="1.2.0" />
+    <AvaloniaResource Include="../../Sources/ChessAppKit/Resources/Chessnut/*.png" Link="Assets/%(Filename)%(Extension)" />
+    <Content Include="../../Sources/ChessAppKit/Resources/puzzles.json" Link="Data/puzzles.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../Sources/ChessAppKit/Resources/openings.json" Link="Data/openings.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../Sources/ChessAppKit/Resources/lessons/*.json" Link="Data/lessons/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../Sources/ChessAppKit/Resources/Chessnut/*.txt" Link="Data/licenses/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../Sources/ChessAppKit/Resources/OPENINGS-*.txt" Link="Data/licenses/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

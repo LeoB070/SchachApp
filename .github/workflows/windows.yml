@@ -1,0 +1,26 @@
+name: Windows desktop
+on:
+  push:
+    paths: ['Windows/**', 'Sources/ChessAppKit/Resources/**', '.github/workflows/windows.yml']
+  pull_request:
+    paths: ['Windows/**', 'Sources/ChessAppKit/Resources/**', '.github/workflows/windows.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  desktop:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Check chess core and hardware profiles
+        run: dotnet run --project Windows/ChessClub.SelfTest -c Release
+      - name: Publish Windows desktop
+        run: dotnet publish Windows/ChessClub/ChessClub.csproj -c Release -r win-x64 --self-contained true -o dist/windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Dein-Schachclub-Windows-x64
+          path: dist/windows/
+          if-no-files-found: error

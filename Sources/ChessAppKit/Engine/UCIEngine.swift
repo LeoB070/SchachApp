@@ -19,12 +19,14 @@ public actor UCIEngine: ChessEngine {
     private var analysisContinuation: AsyncStream<EngineInfo>.Continuation?
     private var analysisID: UUID?
     private var analysisTimeout: Task<Void, Never>?
+    private let analysisTimeoutSeconds: UInt64
     private var sideToMove: Color = .white
     #if canImport(AppKit)
     private var appTerminationObserver: Any?
     #endif
 
-    public init(executablePath: String? = nil, settings: EngineSettings = EngineSettings()) throws {
+    public init(executablePath: String? = nil, settings: EngineSettings = EngineSettings(), analysisTimeoutSeconds: UInt64 = 300) throws {
+        self.analysisTimeoutSeconds = min(3600, max(1, analysisTimeoutSeconds))
         guard let path = executablePath ?? EngineLocator.locateEngine() else {
             throw EngineError.binaryNotFound("Kein Stockfish in Bundle oder Standardpfaden gefunden.")
         }
@@ -200,9 +202,9 @@ public actor UCIEngine: ChessEngine {
             terminateProcess(error: error)
             throw error
         }
-        // shortcut: Fünf Minuten pro Stellung, für lange Analysen einstellbares Zeitbudget ergänzen.
+        let timeout = analysisTimeoutSeconds
         analysisTimeout = Task { [weak self] in
-            do { try await Task.sleep(nanoseconds: 300_000_000_000) }
+            do { try await Task.sleep(nanoseconds: timeout * 1_000_000_000) }
             catch { return }
             await self?.cancelAnalysis(id: id)
         }

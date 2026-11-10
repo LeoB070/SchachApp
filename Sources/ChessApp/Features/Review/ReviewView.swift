@@ -4,6 +4,74 @@ import CoreData
 import Combine
 
 @MainActor
+final class DeepAnalysisModel: ObservableObject {
+    let profile = DeepAnalysisProfile()
+    @Published private(set) var isRunning = false
+    @Published private(set) var variations: [EngineInfo] = []
+    @Published private(set) var message: String?
+    private var task: Task<Void, Never>?
+    private var engine: UCIEngine?
+    private var generation = UUID()
+
+    func start(position: Position, context: NSManagedObjectContext) {
+        cancel()
+        variations = []
+        guard !position.legalMoves().isEmpty else {
+            message = "Diese Stellung ist bereits beendet."
+            return
+        }
+        let id = UUID()
+        generation = id
+        let settings = AppSettings.fetchOrCreate(context: context)
+        do {
+            guard let path = locateEngine(customPath: settings.enginePath) else {
+                throw EngineError.binaryNotFound("Wähle Stockfish in den Einstellungen.")
+            }
+            let engine = try UCIEngine(executablePath: path, settings: profile.engineSettings, analysisTimeoutSeconds: 1800)
+            self.engine = engine
+            isRunning = true
+            message = nil
+            task = Task {
+                do {
+                    try await engine.start()
+                    for await info in engine.analyze(fen: position.fen, depth: profile.depth, multiPV: 3) {
+                        guard !Task.isCancelled, generation == id else { break }
+                        variations.removeAll { $0.multiPV == info.multiPV }
+                        variations.append(info)
+                        variations.sort { $0.multiPV < $1.multiPV }
+                    }
+                    if generation == id && !Task.isCancelled {
+                        message = variations.first(where: { $0.multiPV == 1 }).map { $0.depth >= profile.depth } == true
+                            ? "Zieltiefe erreicht."
+                            : "Suche beendet, bevor die Zieltiefe erreicht wurde (Zeitlimit 30 Minuten oder Engine beendet)."
+                    }
+                } catch {
+                    if generation == id && !Task.isCancelled { message = error.localizedDescription }
+                }
+                await engine.stop()
+                if generation == id { isRunning = false; self.engine = nil }
+            }
+        } catch { message = error.localizedDescription }
+    }
+
+    func cancel() {
+        generation = UUID()
+        task?.cancel()
+        task = nil
+        if let engine { Task { await engine.stop() } }
+        engine = nil
+        if isRunning { message = "Abgebrochen. Bisherige Ergebnisse bleiben sichtbar." }
+        isRunning = false
+    }
+
+    func reset() {
+        cancel()
+        variations = []
+        message = nil
+    }
+}
+
+@MainActor
 final class ReviewViewModel: ObservableObject {
     @Published var positions: [Position] = []
     @Published var sans: [String] = []
@@ -360,6 +428,8 @@ struct EvalBarView: View {
 struct ReviewView: View {
     @Environment(\.managedObjectContext) private var context
     @StateObject private var viewModel = ReviewViewModel()
+    @StateObject private var deepAnalysis = DeepAnalysisModel()
+    @LocalState private var analysisTab = "Partie"
     var game: SavedGame? = nil
     @LocalState private var phaseShowsElo = true
     @LocalState private var trainingPosition: Position? = nil
@@ -415,13 +485,20 @@ struct ReviewView: View {
                     trainingPosition = viewModel.displayedPosition
                     showPositionTraining = true
                 }
-                .disabled(viewModel.positions.isEmpty || viewModel.isAnalyzing || (viewModel.practice.isCandidateChoice && !viewModel.practice.revealed))
+                .disabled(viewModel.positions.isEmpty || viewModel.isAnalyzing || deepAnalysis.isRunning || (viewModel.practice.isCandidateChoice && !viewModel.practice.revealed))
             }
             .padding()
 
             // Right: Analysis Details & Moves
             ScrollView {
               VStack(alignment: .leading, spacing: 16) {
+                Picker("Analysemodus", selection: $analysisTab) {
+                    Text("Partie").tag("Partie")
+                    Text("Tiefanalyse").tag("Tiefanalyse")
+                }.pickerStyle(.segmented)
+                if analysisTab == "Tiefanalyse" {
+                    deepAnalysisPanel
+                } else {
                 HStack {
                     Button("PGN öffnen …") { viewModel.openPGN() }.disabled(viewModel.isAnalyzing)
                     if viewModel.isAnalyzing {
@@ -514,6 +591,7 @@ struct ReviewView: View {
                 }
                 .padding(.vertical, 4)
                 }
+                }
               }
               .padding()
             }
@@ -524,7 +602,12 @@ struct ReviewView: View {
         .tint(AppTheme.accent)
         .navigationTitle("Partie-Analyse")
         .onAppear { viewModel.load(game, context: context) }
-        .onDisappear { viewModel.cancelAnalysis() }
+        .onDisappear { viewModel.cancelAnalysis(); deepAnalysis.cancel() }
+        .onChange(of: viewModel.displayedPosition.fen) { _, _ in deepAnalysis.reset() }
+        .onChange(of: analysisTab) { _, tab in
+            if tab == "Partie" { deepAnalysis.cancel() }
+            else { viewModel.cancelAnalysis() }
+        }
         .sheet(isPresented: $showPositionTraining) {
             if let trainingPosition { PositionTrainingView(position: trainingPosition) }
         }
@@ -535,6 +618,52 @@ struct ReviewView: View {
                     onCancel: { viewModel.practice.pendingPromotion = nil; viewModel.practice.selected = nil })
             }
         }
+    }
+
+    private var deepAnalysisPanel: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Tiefanalyse").font(.title2.bold())
+            Text("Die angezeigte Brettstellung mit voller Engine-Stärke untersuchen.")
+                .foregroundStyle(.secondary)
+            Text("macOS · \(ProcessInfo.processInfo.activeProcessorCount) logische CPUs · \(ProcessInfo.processInfo.physicalMemory / 1024 / 1024 / 1024) GB RAM")
+                .font(.caption)
+            Text("Automatisch: \(deepAnalysis.profile.threads) Threads · \(deepAnalysis.profile.hashMB) MB Hash · Zieltiefe \(deepAnalysis.profile.depth)")
+                .font(.caption.bold())
+            Text("Bis zu 30 Minuten. Mehr Tiefe braucht je nach Stellung deutlich mehr Zeit; die Zieltiefe ist keine Garantie.")
+                .font(.caption).foregroundStyle(.secondary)
+            if deepAnalysis.isRunning {
+                HStack { ProgressView().controlSize(.small); Button("Abbrechen") { deepAnalysis.cancel() } }
+            } else {
+                Button("Stellung tief analysieren") {
+                    deepAnalysis.start(position: viewModel.displayedPosition, context: context)
+                }.buttonStyle(.borderedProminent)
+            }
+            if let message = deepAnalysis.message { Text(message).font(.caption).textSelection(.enabled) }
+            ForEach(deepAnalysis.variations, id: \.multiPV) { info in
+                VStack(alignment: .leading, spacing: 5) {
+                    HStack {
+                        Text("Variante \(info.multiPV) · Tiefe \(info.depth)").font(.headline)
+                        Spacer()
+                        Text(info.mate.map { "Matt \($0)" } ?? info.cp.map { String(format: "%+.2f", Double($0) / 100) } ?? "–")
+                    }
+                    Text(variationSAN(info.pv)).font(.system(.caption, design: .monospaced)).textSelection(.enabled)
+                    if let nps = info.nps { Text("\(nps.formatted()) Knoten/s").font(.caption2).foregroundStyle(.secondary) }
+                }.padding(10).panel()
+            }
+            Text("Bewertungen aus Sicht von Weiß. Beim Stellungswechsel werden Ergebnisse zurückgesetzt.")
+                .font(.caption2).foregroundStyle(.secondary)
+        }
+    }
+
+    private func variationSAN(_ moves: [String]) -> String {
+        var position = viewModel.displayedPosition
+        var result: [String] = []
+        for uci in moves {
+            guard let move = position.legalMoves().first(where: { $0.uci == uci }) else { break }
+            result.append(SAN.notation(for: move, in: position))
+            position = position.make(move)
+        }
+        return result.joined(separator: " ")
     }
 
     private var guidedReviewCard: some View {
