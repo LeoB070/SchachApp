@@ -53,7 +53,7 @@ führt vom ersten Terminal-Befehl bis zur geöffneten App.
 **Voraussetzung:** macOS 14 oder neuer. Bisher auf Apple Silicon geprüft;
 Intel-Macs sind nicht verifiziert.
 
-1. Unter [Releases](https://github.com/LeoB070/SchachApp/releases) ein macOS-App-ZIP herunterladen und entpacken. Die dortige Versionsnummer bezeichnet den tatsächlich verfügbaren Download; der Quellstand hier ist **1.1.0**.
+1. Unter [Releases](https://github.com/LeoB070/SchachApp/releases) ein macOS-App-ZIP herunterladen und entpacken. Die aktuelle Version ist **1.1.0**.
 2. `ChessApp.app` in den Programme-Ordner ziehen.
 3. [Stockfish einrichten](#stockfish-einrichten), dann die App öffnen.
 
@@ -100,17 +100,18 @@ Herkunft und Lizenzen aller Fremdkomponenten stehen in [THIRD_PARTY.md](THIRD_PA
 
 ## Aus dem Quellcode bauen
 
-Für macOS: Swift 6 und Xcode Command Line Tools. Die Tools lassen sich mit
-`xcode-select --install` installieren; volles Xcode ist für den lokalen Build nicht nötig.
+Für macOS genügt der geführte Installer im entpackten Quellcode-Ordner:
 
 ```sh
-git clone https://github.com/LeoB070/SchachApp.git
-cd SchachApp
-./start.sh
+sh start.sh
 ```
 
-`start.sh` zeigt vier Schritte: Voraussetzungen prüfen, Stockfish suchen,
-App bauen und App öffnen. Die Build-Ausgabe steht in `dist/setup.log`.
+`start.sh` installiert fehlende Xcode Command Line Tools, Homebrew und Stockfish,
+baut die App und öffnet sie. Bestätigungen im Apple- oder Homebrew-Installer
+bleiben erforderlich. Für eine neue Homebrew-Installation wird offiziell macOS 15+
+unterstützt; die App selbst benötigt macOS 14+.
+Die [Schritt-für-Schritt-Anleitung](docs/MACOS-SETUP.md) beginnt beim ZIP-Download
+und benötigt kein vorinstalliertes Git. Die Build-Ausgabe steht in `dist/setup.log`.
 
 Entwicklungsstart, Prüfungen und Windows-Paketierung sind in
 [CONTRIBUTING.md](CONTRIBUTING.md) beschrieben. Für neue Versionen gibt es eine

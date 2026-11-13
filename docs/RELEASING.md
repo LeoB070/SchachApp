@@ -1,6 +1,6 @@
 # Eine neue Version veröffentlichen
 
-Aktuell vorbereitete Version: **1.1.0**. Tags folgen dem Schema `vMAJOR.MINOR.PATCH`:
+Aktuelle Version: **1.1.0**. Tags folgen dem Schema `vMAJOR.MINOR.PATCH`:
 Fehlerkorrekturen erhöhen PATCH, kompatible Funktionen MINOR und inkompatible
 Änderungen MAJOR. Frühere Downloads bleiben unter ihren bisherigen Tags erhalten.
 
@@ -59,7 +59,7 @@ und die offizielle Downloadseite verweisen.
    Prüfsummen der ZIPs anhängen.
 5. Downloadlinks und Paketnamen im Entwurf prüfen, dann veröffentlichen.
 6. Den Changelog-Link für 1.1.0 auf die Release-Seite und den Vergleich für
-   `Unreleased` auf `v1.1.0...HEAD` umstellen. Versionshinweise in dieser Anleitung aktualisieren.
+   `Unreleased` auf `v1.1.0...HEAD` umstellen. Versionshinweise in dieser Anleitung aktualisieren. Bereits veröffentlichte Tags nicht verschieben.
 
 Vor dem ersten öffentlichen Release unter **Settings → General → Change repository
 visibility** die gewünschte Sichtbarkeit einstellen. Vorher auch die Git-Historie

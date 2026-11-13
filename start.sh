@@ -1,5 +1,5 @@
 #!/bin/sh
-# Guided local setup; software installation remains an explicit user action.
+# Install missing prerequisites, then build and open the local app.
 set -eu
 cd "$(dirname "$0")"
 
@@ -16,8 +16,13 @@ if [ "${macos%%.*}" -lt 14 ]; then
     exit 1
 fi
 if ! xcrun --find swift >/dev/null 2>&1; then
-    printf 'Die Xcode Command Line Tools fehlen. Führe aus:\n\n  xcode-select --install\n\nDanach dieses Skript erneut starten.\n' >&2
-    exit 1
+    printf 'Entwicklerwerkzeuge fehlen. Starte den Apple-Installer (xcode-select --install).\n'
+    xcode-select --install || printf 'Falls bereits ein Installationsdialog offen ist, schließe die Installation dort ab.\n'
+    printf 'Im Apple-Dialog installieren. Nach Abschluss hier Enter drücken: '
+    if ! read -r answer || ! xcrun --find swift >/dev/null 2>&1; then
+        printf '\nDie Werkzeuge sind noch nicht verfügbar. Installation abschließen und ./start.sh erneut ausführen.\n' >&2
+        exit 1
+    fi
 fi
 swift_version=$(swift --version)
 swift_major=$(printf '%s\n' "$swift_version" | sed -n 's/.*Swift version \([0-9][0-9]*\).*/\1/p' | head -1)
@@ -27,18 +32,47 @@ if [ -z "$swift_major" ] || [ "$swift_major" -lt 6 ]; then
 fi
 printf '✓ macOS %s · Swift %s\n' "$macos" "$swift_major"
 
-printf '\n[2/4] Stockfish suchen\n'
-engine=''
-for candidate in /opt/homebrew/bin/stockfish /usr/local/bin/stockfish; do
-    if [ -x "$candidate" ]; then engine=$candidate; break; fi
+printf '\n[2/4] Homebrew und Stockfish einrichten\n'
+brew_bin=$(command -v brew || true)
+for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+    if [ -z "$brew_bin" ] && [ -x "$candidate" ]; then brew_bin=$candidate; fi
 done
-if [ -n "$engine" ]; then
-    printf '✓ Engine gefunden: %s\n' "$engine"
+if [ -z "$brew_bin" ]; then
+    if [ "${macos%%.*}" -lt 15 ]; then
+        printf 'Die aktuelle Homebrew-Neuinstallation benötigt offiziell macOS 15+.\nStockfish manuell installieren: https://stockfishchess.org/download/\nDanach die App mit ./make-app.sh bauen. Siehe docs/MACOS-SETUP.md.\n' >&2
+        exit 1
+    fi
+    printf 'Homebrew fehlt. Lade den offiziellen Installer von https://brew.sh/.\n'
+    printf 'Der Installer erläutert Änderungen und fragt ggf. nach deinem Mac-Passwort.\n'
+    installer=$(mktemp -t schachclub-homebrew)
+    trap 'rm -f "$installer"' 0
+    if ! curl --fail --show-error --location --connect-timeout 15 --max-time 180 --proto '=https' \
+        https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh -o "$installer"; then
+        printf 'Homebrew-Download fehlgeschlagen. Internetverbindung prüfen und erneut starten.\n' >&2
+        exit 1
+    fi
+    if ! /bin/bash "$installer"; then
+        printf 'Homebrew-Installation nicht abgeschlossen. Hinweise oben prüfen und erneut starten.\n' >&2
+        exit 1
+    fi
+    for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+        if [ -x "$candidate" ]; then brew_bin=$candidate; break; fi
+    done
+    if [ -z "$brew_bin" ]; then
+        printf 'Homebrew wurde nicht gefunden. Hinweise des Installers prüfen.\n' >&2
+        exit 1
+    fi
+fi
+printf '✓ Homebrew gefunden: %s\n' "$brew_bin"
+if "$brew_bin" list --versions stockfish >/dev/null 2>&1; then
+    printf '✓ Stockfish bereits installiert\n'
 else
-    printf 'Hinweis: Keine Engine an den Standardpfaden gefunden.\n'
-    printf 'Mit Homebrew installieren: brew install stockfish\n'
-    printf 'Oder von https://stockfishchess.org/download/ laden und in den App-Einstellungen auswählen.\n'
-    printf 'Die App startet auch ohne Engine; Engine-Bots und Analyse benötigen Stockfish.\n'
+    printf 'Stockfish installieren (brew install stockfish) …\n'
+    if ! "$brew_bin" install stockfish; then
+        printf 'Stockfish-Installation fehlgeschlagen. Die App wurde nicht gebaut. Hinweise oben prüfen.\n' >&2
+        exit 1
+    fi
+    printf '✓ Stockfish installiert\n'
 fi
 
 printf '\n[3/4] App bauen und lokal signieren\n'

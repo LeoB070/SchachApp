@@ -11,83 +11,70 @@ Der Quellbuild ist bisher auf Apple Silicon geprüft.
 Öffne mit `⌘ Leertaste` die Spotlight-Suche, tippe **Terminal** und drücke Enter.
 Befehle aus dieser Anleitung jeweils kopieren, einfügen und mit Enter ausführen.
 
-## 2. Entwicklerwerkzeuge installieren
+## 2. Projekt herunterladen – ohne Git
 
-```sh
-xcode-select --install
-```
+Öffne die [Release-Seite](https://github.com/LeoB070/SchachApp/releases/tag/v1.1.0)
+und lade unter **Assets → Source code (zip)** den Quellcode herunter.
+Entpacke das ZIP per Doppelklick. Dafür brauchst du weder Git noch Xcode.
 
-Im macOS-Dialog **Installieren** wählen und die Installation abwarten.
-Wenn die Werkzeuge bereits installiert sind, kannst du direkt weitermachen.
-Prüfe die Swift-Version:
+Tippe im Terminal `cd ` (mit Leerzeichen), ziehe den entpackten Projektordner
+ins Terminal und drücke Enter. So funktioniert es auch bei Leerzeichen im Ordnernamen.
 
-```sh
-swift --version
-```
-
-Benötigt wird **Swift 6 oder neuer**. Bei einer älteren Version die Command Line
-Tools über **Systemeinstellungen → Allgemein → Softwareupdate** aktualisieren.
-Volles Xcode ist für diesen Build nicht erforderlich.
-
-## 3. Projekt herunterladen
-
-```sh
-mkdir -p ~/Developer
-cd ~/Developer
-git clone https://github.com/LeoB070/SchachApp.git
-cd SchachApp
-```
-
-Das Projekt liegt jetzt in deinem Benutzerordner unter `Developer/SchachApp`.
-Wenn du es schon geklont hast, öffne stattdessen den vorhandenen Projektordner.
-
-Alternativ auf GitHub **Code → Download ZIP** wählen, das ZIP entpacken und den
-Ordner im Terminal öffnen: `cd ` eingeben (mit Leerzeichen), den entpackten Ordner
-ins Terminal ziehen und Enter drücken.
-
-## 4. Stockfish installieren
-
-Stockfish übernimmt Engine-Bots und Analyse. Die Engine wird separat installiert
-und ist nicht im App-Paket enthalten.
-
-Wenn [Homebrew](https://brew.sh/) bereits installiert ist:
-
-```sh
-brew install stockfish
-```
-
-Ohne Homebrew kannst du die passende macOS-Engine direkt von
-[stockfishchess.org/download](https://stockfishchess.org/download/) herunterladen
-und entpacken. Wähle ihre ausführbare Datei später in den App-Einstellungen aus.
-Den Starter kannst du auch ohne Engine ausführen; er weist auf die fehlende
-Engine hin und öffnet die App trotzdem.
-
-## 5. Geführten Start ausführen
-
-Im Projektordner:
-
-```sh
-./start.sh
-```
-
-Bei einem ZIP-Download kann das Ausführungsrecht fehlen. Dann funktioniert:
+## 3. Alles einrichten und starten
 
 ```sh
 sh start.sh
 ```
 
-Der Starter zeigt nacheinander, was er gerade macht. Beispielausgabe
-(Pfade und Versionsangaben hängen von deinem Mac ab):
+Das Skript zeigt vier Schritte und verwendet vorhandene Installationen weiter:
+
+1. **Mac und Entwicklerwerkzeuge:** Fehlen die Xcode Command Line Tools,
+   öffnet es den Apple-Installationsdialog. Dort **Installieren** wählen,
+   die Installation abwarten und anschließend im Terminal Enter drücken.
+2. **Homebrew und Stockfish:** Fehlt Homebrew, lädt und startet das Skript den
+   [offiziellen Homebrew-Installer](https://brew.sh/). Dieser zeigt seine Änderungen
+   und fordert ggf. Enter oder dein Mac-Administratorpasswort an. Anschließend
+   wird Stockfish über `brew install stockfish` installiert, falls es fehlt.
+3. **App bauen:** Die App wird kompiliert und lokal signiert. Der erste Build
+   kann einige Minuten dauern. Die Compiler-Ausgabe steht in `dist/setup.log`.
+4. **App öffnen:** Nach erfolgreichem Build öffnet sich `dist/ChessApp.app`.
+
+Bei der Passworteingabe zeigt das Terminal keine Zeichen an; das ist normal.
+Gib dein Passwort ausschließlich in den Systemdialog beziehungsweise die
+Passwortabfrage des offiziellen Homebrew-Installers ein.
+
+### Voraussetzungen und Systemgrenzen
+
+Die App benötigt macOS 14+, der Quellbuild Swift 6+. Für eine **neue Homebrew-
+Installation unterstützt Homebrew offiziell macOS 15+**; siehe die
+[aktuellen Voraussetzungen](https://docs.brew.sh/Installation).
+Apple Silicon ist die bisher geprüfte Architektur.
+
+Wenn Swift trotz installierter Werkzeuge älter als Version 6 ist, zeigt der
+Starter den nötigen Updatehinweis. Die Command Line Tools dann über
+**Systemeinstellungen → Allgemein → Softwareupdate** aktualisieren und den
+Starter erneut ausführen. Das Skript führt kein Betriebssystem-Upgrade durch.
+
+Auf macOS 14 ohne Homebrew kannst du die Engine von
+[stockfishchess.org/download](https://stockfishchess.org/download/) herunterladen,
+mit `sh make-app.sh` bauen und `dist/ChessApp.app` im Finder öffnen. Wähle die
+entpackte Engine anschließend in den App-Einstellungen aus.
+
+## 4. So sieht der Start aus
+
+Beispiel bei vorhandenen Werkzeugen; Versionen und Pfade hängen vom Mac ab:
 
 ```text
 ♞  Dein Schachclub — macOS-Start
 ────────────────────────────────────────
 
 [1/4] Mac und Entwicklerwerkzeuge prüfen
-✓ macOS 14.0 · Swift 6
+✓ macOS 15.0 · Swift 6
 
-[2/4] Stockfish suchen
-✓ Engine gefunden: /opt/homebrew/bin/stockfish
+[2/4] Homebrew und Stockfish einrichten
+✓ Homebrew gefunden: /opt/homebrew/bin/brew
+Stockfish installieren (brew install stockfish) …
+✓ Stockfish installiert
 
 [3/4] App bauen und lokal signieren
 Der erste Build kann einige Minuten dauern. Build-Ausgabe: dist/setup.log
@@ -97,12 +84,11 @@ Der erste Build kann einige Minuten dauern. Build-Ausgabe: dist/setup.log
 ✓ Start an macOS übergeben. Viel Spaß am Brett!
 ```
 
-Der Starter installiert keine Software im Hintergrund. Bei fehlenden Werkzeugen
-zeigt er den nächsten Schritt an. Der erste Build kann einige Minuten dauern;
-die Compiler-Ausgabe wird in `dist/setup.log` gespeichert. Bei einem Fehler zeigt
+Installationsausgaben bleiben im Terminal sichtbar. Bei einem Buildfehler zeigt
 der Starter die letzten Meldungen und öffnet keine möglicherweise veraltete App.
+Abgebrochene Installationen kannst du mit `sh start.sh` erneut aufnehmen.
 
-## 6. Am Brett loslegen
+## 5. Am Brett loslegen
 
 Nach dem Öffnen kannst du eine Botpartie, Puzzles oder Lektionen auswählen.
 Falls Stockfish nicht erkannt wird, wähle in den **Einstellungen** die entpackte,
@@ -117,7 +103,7 @@ Buildschritte werden vom vorhandenen Buildsystem wiederverwendet.
 
 | Meldung / Situation | Nächster Schritt |
 | --- | --- |
-| `git` oder Entwicklerwerkzeuge fehlen | Schritt 2 abschließen und das Terminal erneut öffnen. |
+| `git` oder Entwicklerwerkzeuge fehlen | `sh start.sh` ausführen und den Apple-Installationsdialog abschließen. |
 | Swift ist zu alt | Command Line Tools über macOS-Softwareupdate aktualisieren. |
 | `cd: no such file or directory` | Den tatsächlichen Projektordner hinter `cd ` ins Terminal ziehen. |
 | `Permission denied` bei `./start.sh` | `sh start.sh` verwenden. |
@@ -128,7 +114,7 @@ Buildschritte werden vom vorhandenen Buildsystem wiederverwendet.
 ## Später aktualisieren
 
 App schließen, wichtige Partien vorher als PGN exportieren und lokale Daten sichern.
-Bei einer unveränderten Git-Arbeitskopie:
+Bei einer Git-Arbeitskopie ohne lokale Änderungen (optional für Entwickler):
 
 ```sh
 cd ~/Developer/SchachApp
