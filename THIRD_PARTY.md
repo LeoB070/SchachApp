@@ -1,5 +1,8 @@
 # Fremdkomponenten
 
+Die [MIT-Lizenz](LICENSE) des Projekts gilt für den eigenen Code. Die hier
+aufgeführten Komponenten behalten ihre jeweiligen Lizenzen und Urheberhinweise.
+
 ## Stockfish — separat, nicht enthalten
 
 Stockfish wird unabhängig installiert und als separater UCI-Prozess genutzt.
@@ -11,8 +14,7 @@ Es wird weder als Binärdatei noch als Quellcode im Repository oder App-Download
 
 Die GPLv3 erlaubt Nutzung und Weitergabe unter ihren Bedingungen. Wer die Engine
 selbst weiterverteilt, muss unter anderem die Lizenz und den passenden Quellcode
-beziehungsweise dessen Bezugsstelle bereitstellen. Ein privates Repo ist keine
-Ausnahme von diesen Bedingungen. Diese Beschreibung ersetzt keine individuelle
+beziehungsweise dessen Bezugsstelle bereitstellen. Diese Beschreibung ersetzt keine individuelle
 rechtliche Prüfung einer später geänderten Distribution.
 
 ## Chessnut-Figuren — Apache 2.0

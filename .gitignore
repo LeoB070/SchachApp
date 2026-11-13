@@ -21,3 +21,10 @@ Sources/ChessAppKit/Resources/Stockfish/stockfish*
 **/obj/
 .vs/
 *.user
+
+# Local editor files and publish archives
+.vscode/
+.idea/
+*.zip
+*.tar.gz
+*.log

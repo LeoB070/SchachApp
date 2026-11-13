@@ -15,7 +15,7 @@ struct AboutView: View {
                 .font(.title)
                 .bold()
 
-            Text("Version 1.0.0 – Native macOS Schach-App")
+            Text("Version \(ChessAppKitInfo.version) – Native macOS Schach-App")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 

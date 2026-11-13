@@ -1,4 +1,8 @@
-# HANDOFF – ChessApp
+# Historische Entwicklungsübergabe – ChessApp
+
+> Archivierter Stand vom 6. November 2026. Angaben zu Funktionen, Versionen und
+> offenen Punkten sind historisch. Aktuelle Informationen: [README](README.md),
+> [Changelog](CHANGELOG.md) und [Beitragsrichtlinien](CONTRIBUTING.md).
 
 Stand: 6. November 2026, Fortsetzung und Sicherung der Gemini-Arbeit.
 
